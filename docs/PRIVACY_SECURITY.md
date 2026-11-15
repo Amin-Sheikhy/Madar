@@ -21,6 +21,7 @@ A secret-pattern scan was run on the curated source set before packaging. The sc
 
 - The application server binds to `127.0.0.1` in source.
 - Host and Origin checks are present for local API operations, including the v4.53 managed-book delete route.
+- The v4.54 candidate updater writes only four program files after exact baseline and payload hash checks. It stores a program-file backup under `Backups`, checks the active `Data` and `Books` locations through loopback APIs, and does not upload its report or user content.
 - The local API is not intended to be exposed to a LAN or the public internet.
 - PDF opening/import into the local Books folder does not by itself invoke an AI provider.
 - Deleting a managed book removes only the Madar-managed copy in Books. The original source file outside that folder is not touched.
@@ -34,5 +35,5 @@ The source contains a Sign in with ChatGPT plan-usage implementation using loopb
 ## Remaining security work
 
 - No independent security audit or penetration test has been performed.
-- Target-Windows runtime verification of the v4.53 one-click update is `NOT_TESTED` in this snapshot.
+- Target-Windows runtime verification of the v4.54 one-click update remains `NOT_TESTED`; CI build success does not prove installation on a user's Windows machine.
 - Users should not place the local service behind a public reverse proxy or configure it to bind to a non-loopback interface without a separate security review.
