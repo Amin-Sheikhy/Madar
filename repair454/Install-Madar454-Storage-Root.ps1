@@ -256,6 +256,12 @@ try {
  }
  $dataFolder = Join-Path $script:base 'Data'
  $booksFolder = Join-Path $script:base 'Books'
+ if ($env:MADAR_DATA_DIR) {
+  $configuredData = [IO.Path]::GetFullPath([string]$env:MADAR_DATA_DIR)
+  if (-not [string]::Equals($configuredData,[IO.Path]::GetFullPath($dataFolder),[StringComparison]::OrdinalIgnoreCase)) {
+   throw 'A custom MADAR_DATA_DIR is configured outside the installation Data folder. Update stopped to avoid making existing records appear missing.'
+  }
+ }
  $health = Current-Health
  $running = @(Get-MadarProcesses)
  if ($running.Count -gt 1) { throw 'Multiple Madar server processes were found; update stopped.' }
@@ -306,7 +312,7 @@ try {
   }
  }
  $reason = 'RUNTIME_HEALTH'
- if (-not $script:hadServer) { Start-Madar }
+ if ($script:oldVersion -ne $targetVersion -or ($running.Count -eq 0 -and -not $health)) { Start-Madar }
  $verifiedHealth = Wait-ForV454
  $healthStatus = 'PASS'
  $reason = 'STORAGE_PATH_ACCEPTANCE'
