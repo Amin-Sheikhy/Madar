@@ -4,7 +4,7 @@
 No network, Windows SDK, Go runtime, administrator privileges or signature is
 needed to build. PE imports reference the real Windows KERNEL32.dll. The tiny
 stub has no libc dependency; its verified ZIP overlay carries only the already
-reviewed v4.53 book-delete and dashboard overlay files.
+reviewed v4.54 launcher and storage-root overlay files.
 """
 from __future__ import annotations
 
@@ -21,8 +21,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent
 BUILD = HERE / "build"
-OUTPUT = PROJECT.parent / "Madar453-OneClick-D.exe"
-MAGIC = b"MADAR453_ZIPEND!"
+OUTPUT = PROJECT / "dist" / "Madar454-OneClick-D.exe"
+MAGIC = b"MADAR454_ZIPEND!"
 
 
 def run(*args: str) -> str:
@@ -87,22 +87,56 @@ def convert_pcrel_coff(obj: Path) -> None:
 
 
 def make_payload() -> bytes:
-    entries = [(PROJECT / "repair453" / "Install-Madar453-Books-Delete.ps1",
-                "Install-Madar453-Books-Delete.ps1")]
-    entries += [(p, "patch/" + p.name) for p in
-                sorted((PROJECT / "repair453" / "patch").glob("*")) if p.is_file()]
-    if len(entries) != 10:
-        raise RuntimeError(f"Expected exactly 10 embedded files, got {len(entries)}")
+    patch_dir = PROJECT / "repair454" / "patch"
+    installer_path = PROJECT / "repair454" / "Install-Madar454-Storage-Root.ps1"
+    names = ("BUILD.txt", "madar_launcher.py", "vault_server.py", "madar_ai_server.py")
+    if not installer_path.is_file():
+        raise RuntimeError("v4.54 update script is missing")
+    installer = installer_path.read_text("utf-8")
+    tokens = {
+        "BUILD.txt": "__HASH_BUILD__",
+        "madar_launcher.py": "__HASH_LAUNCHER__",
+        "vault_server.py": "__HASH_VAULT__",
+        "madar_ai_server.py": "__HASH_SERVER__",
+    }
+    for name in names:
+        patch_file = patch_dir / name
+        source_file = PROJECT / "app" / name
+        if not patch_file.is_file() or not source_file.is_file():
+            raise RuntimeError("Missing v4.54 payload file: " + name)
+        patch_bytes = patch_file.read_bytes()
+        if patch_bytes != source_file.read_bytes():
+            raise RuntimeError("The one-click payload differs from the v4.54 app source: " + name)
+        token = tokens[name]
+        digest = hashlib.sha256(patch_bytes).hexdigest()
+        if token not in installer:
+            raise RuntimeError("Expected target hash token is missing: " + token)
+        installer = installer.replace(token, digest)
+    if "__HASH_" in installer:
+        raise RuntimeError("An unresolved target-file hash remains in the installer")
+    entries = [
+        (installer.encode("utf-8"), "Install-Madar454-Storage-Root.ps1"),
+        *((patch_dir / name, "patch/" + name) for name in names),
+    ]
     blob = io.BytesIO()
     with zipfile.ZipFile(blob, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-        for local, arcname in entries:
-            z.write(local, arcname)
-    return blob.getvalue()
+        for item, arcname in entries:
+            if isinstance(item, bytes):
+                z.writestr(arcname, item)
+            else:
+                z.write(item, arcname)
+    package = blob.getvalue()
+    with zipfile.ZipFile(io.BytesIO(package)) as z:
+        if z.testzip() is not None or len(z.namelist()) != 5:
+            raise RuntimeError("The v4.54 embedded package failed ZIP validation")
+        if "__HASH_" in z.read("Install-Madar454-Storage-Root.ps1").decode("utf-8"):
+            raise RuntimeError("The embedded installer contains unresolved file hashes")
+    return package
 
 
 def build() -> None:
-    if not (PROJECT / "app" / "BUILD.txt").read_text("utf-8").startswith("v4.53 "):
-        raise RuntimeError("Not building from Madar v4.53")
+    if not (PROJECT / "app" / "BUILD.txt").read_text("utf-8").startswith("v4.54 "):
+        raise RuntimeError("Not building from Madar v4.54")
     BUILD.mkdir(exist_ok=True)
     package = make_payload()
     digest = hashlib.sha256(package).hexdigest()
@@ -114,7 +148,7 @@ def build() -> None:
     if len(command) > 30000 or not command.isascii():
         raise RuntimeError("Windows launch command is too long or non-ASCII")
     (BUILD / "encoded_bootstrap.h").write_text(
-        '#define MADAR453_BOOTSTRAP_ARGUMENTS "' + command + '"\n', encoding="ascii")
+        '#define MADAR454_BOOTSTRAP_ARGUMENTS "' + command + '"\n', encoding="ascii")
     run("as", "--64", "-o", str(BUILD / "kernel32stub-linux.o"), "kernel32stub.s")
     run("objcopy", "-O", "pe-x86-64", str(BUILD / "kernel32stub-linux.o"),
         str(BUILD / "kernel32stub.obj"))
@@ -126,23 +160,24 @@ def build() -> None:
     run("objcopy", "--remove-section", ".comment", "--remove-section", ".note.GNU-stack",
         "-O", "pe-x86-64", str(BUILD / "launcher-linux.o"), str(BUILD / "launcher.obj"))
     convert_pcrel_coff(BUILD / "launcher.obj")
-    run("ld", "-m", "i386pep", "-o", str(BUILD / "Madar453-OneClick-D.exe"),
+    run("ld", "-m", "i386pep", "-o", str(BUILD / "Madar454-OneClick-D.exe"),
         str(BUILD / "launcher.obj"), str(BUILD / "libkernel32.a"),
         "--subsystem", "windows", "-e", "mainCRTStartup", "--image-base", "0x140000000")
-    pe = (BUILD / "Madar453-OneClick-D.exe").read_bytes()
+    pe = (BUILD / "Madar454-OneClick-D.exe").read_bytes()
     if pe[:2] != b"MZ":
         raise RuntimeError("Produced file lacks Windows PE signature")
     pe_off = struct.unpack_from("<I", pe, 0x3C)[0]
     if pe[pe_off:pe_off + 4] != b"PE\0\0" or struct.unpack_from("<H", pe, pe_off + 4)[0] != 0x8664:
         raise RuntimeError("Invalid Windows x64 PE header")
-    info = run("objdump", "-p", str(BUILD / "Madar453-OneClick-D.exe"))
+    info = run("objdump", "-p", str(BUILD / "Madar454-OneClick-D.exe"))
     if ("DLL Name: KERNEL32.dll" not in info or "Subsystem\t\t00000002" not in info
             or "CreateProcessW" not in info or "GetSystemDirectoryW" not in info
             or "WinExec" in info):
         raise RuntimeError("Unexpected PE subsystem or imports")
-    disassembly = run("objdump", "-d", str(BUILD / "Madar453-OneClick-D.exe"))
+    disassembly = run("objdump", "-d", str(BUILD / "Madar454-OneClick-D.exe"))
     if "lea    0x0(%rip),%rbx" in disassembly:
         raise RuntimeError("PE code references itself in place of selfPath")
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_bytes(pe + package + MAGIC + struct.pack("<Q", len(package)))
     verify = OUTPUT.read_bytes()
     length = struct.unpack_from("<Q", verify, len(verify) - 8)[0]
@@ -150,7 +185,7 @@ def build() -> None:
     embedded = verify[-24-length:-24]
     assert hashlib.sha256(embedded).hexdigest() == digest
     with zipfile.ZipFile(io.BytesIO(embedded)) as z:
-        assert z.testzip() is None and len(z.namelist()) == 10
+        assert z.testzip() is None and len(z.namelist()) == 5
     print("PASS Windows PE32+ x86-64 GUI, KERNEL32 imports, embedded ZIP hash")
     print("Installer bytes:", len(verify))
     print("Installer SHA256:", hashlib.sha256(verify).hexdigest())
