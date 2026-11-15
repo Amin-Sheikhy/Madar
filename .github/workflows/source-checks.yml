@@ -21,7 +21,7 @@ jobs:
           python-version: "3.13"
 
       - name: Compile Python source
-        run: python -m compileall -q app tests repair453
+        run: python -m compileall -q app tests repair453 repair454
 
       - name: Run isolated unit tests
         run: python -m unittest discover -s tests -v
@@ -34,7 +34,7 @@ jobs:
       - name: Check JavaScript syntax
         shell: bash
         run: |
-          find app repair453/patch -type f -name '*.js' ! -path '*/vendor/*' -print0 \
+          find app repair453/patch repair454/patch -type f -name '*.js' ! -path '*/vendor/*' -print0 \
             | xargs -0 -r -n1 node --check
 
       - name: Validate PowerShell syntax
@@ -42,7 +42,8 @@ jobs:
         run: |
           $files = @(
             "oneclick/bootstrap.ps1",
-            "repair453/Install-Madar453-Books-Delete.ps1"
+            "repair453/Install-Madar453-Books-Delete.ps1",
+            "repair454/Install-Madar454-Storage-Root.ps1"
           )
           foreach ($file in $files) {
             $tokens = $null
@@ -54,3 +55,15 @@ jobs:
               exit 1
             }
           }
+
+
+      - name: Build v4.54 Windows x64 one-click installer
+        run: python oneclick/build_oneclick.py
+
+      - name: Upload v4.54 one-click installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Madar454-OneClick-D
+          path: dist/Madar454-OneClick-D.exe
+          if-no-files-found: error
+          retention-days: 30
