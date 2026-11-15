@@ -38,4 +38,4 @@ Windows launcher
 
 ## Version boundary
 
-This snapshot is the v4.53 source state. The v4.53 update overlay patches the dashboard/PDF-related files and adds a guarded managed-book delete endpoint. It is not a general installer for a clean machine. The update script only accepts known file hashes for its stated v4.51/v4.52 baselines and performs a rollback path when an update step fails.
+The public `main` branch remains the v4.53 source snapshot. The `codex/v4.54-storage-root` working branch prepares v4.54. Its one-click overlay replaces only `BUILD.txt`, `madar_launcher.py`, `vault_server.py`, and `madar_ai_server.py`. It accepts exact hashes for known v4.49, v4.50, v4.51, v4.52, and v4.53 baselines; v4.48, unknown versions, and modified target files are rejected without replacement. Before activation it backs up the four program files, leaves `Data` and `Books` contents untouched, and after activation checks the reported version, dashboard/PDF assets, and the actual active `Data`/`Books` paths. If post-update checks fail, it attempts to restore the previous program files from `Backups`.
