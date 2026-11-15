@@ -2,7 +2,7 @@
 
 Build identity: `v4.54 14050824 SU GPT-6 PORTABLE_STORAGE_ROOT_D`
 
-The v4.54 candidate is on `codex/v4.54-storage-root`. It is not merged into `main` and is not a published GitHub Release. The successful CI build and artifact are available in [GitHub Actions run 43759871847](https://github.com/Amin-Sheikhy/Madar/actions/runs/43759871847).
+The v4.54 candidate is on `codex/v4.54-storage-root`. It is not merged into `main` and is not a published GitHub Release. The successful CI build and artifact are available in [GitHub Actions run 43760254035](https://github.com/Amin-Sheikhy/Madar/actions/runs/43760254035).
 
 | Check | Status | Notes |
 |---|---|---|
@@ -27,8 +27,8 @@ The v4.54 candidate is on `codex/v4.54-storage-root`. It is not merged into `mai
 
 - File: `Madar454-OneClick-D.exe`
 - Size: 48,746 bytes
-- SHA-256: `6062cd67b677eb234f8392685bb1fd5d768aa050209b53c1c5026b575e17fc81`
-- GitHub Actions artifact: `Madar454-OneClick-D` (artifact ID `14180046481`)
+- SHA-256: `519c14cd02470034da07af50e15d1785ec4bea49a5ad0c0a2d5a64129f48165d`
+- GitHub Actions artifact: `Madar454-OneClick-D` (artifact ID `14179863191`)
 
 ## Update safety boundary
 
