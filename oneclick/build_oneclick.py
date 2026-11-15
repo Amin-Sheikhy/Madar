@@ -27,7 +27,11 @@ MAGIC = b"MADAR454_ZIPEND!"
 
 def run(*args: str) -> str:
     p = subprocess.run(args, cwd=HERE, text=True, stdout=subprocess.PIPE,
-                       stderr=subprocess.STDOUT, check=True)
+                       stderr=subprocess.STDOUT, check=False)
+    if p.returncode:
+        raise RuntimeError(
+            "Command failed (" + str(p.returncode) + "): " + " ".join(args) + "\\n" + p.stdout
+        )
     return p.stdout
 
 
