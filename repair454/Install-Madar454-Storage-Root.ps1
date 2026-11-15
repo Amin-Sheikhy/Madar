@@ -266,7 +266,14 @@ try {
  $running = @(Get-MadarProcesses)
  if ($running.Count -gt 1) { throw 'Multiple Madar server processes were found; update stopped.' }
  if ($health -and ($health.applicationId -ne 'madar-local' -or $health.version -ne $script:oldVersion)) {
-  if ($script:oldVersion -ne $targetVersion) { throw 'Port 8765 is serving a different or unknown Madar version.' }
+  throw 'Port 8765 is serving a different or unknown Madar version.'
+ }
+ if ($running.Count -eq 1 -and -not $health) {
+  throw 'The detected Madar server is not healthy enough to verify its current Data and Books paths. Restart Madar and retry.'
+ }
+ if ($health) {
+  $reason = 'EXISTING_STORAGE_PATH_PREFLIGHT'
+  $storageStatus = Test-StorageLayout
  }
  if ($running.Count -eq 0 -and $health) {
   throw 'The health endpoint is not owned by the detected Madar launcher; update stopped.'
