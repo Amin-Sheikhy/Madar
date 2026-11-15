@@ -2,7 +2,8 @@
 
 [نسخه فارسی (README.fa.md)](README.fa.md)
 
-**Current source version:** `v4.53 14050824 SU GPT-6 BOOKS_DELETE_DIRECT_DOWNLOAD`  
+**Working-branch version:** `v4.54 14050824 SU GPT-6 PORTABLE_STORAGE_ROOT_D`  
+**Published `main` baseline:** `v4.53 14050824 SU GPT-6 BOOKS_DELETE_DIRECT_DOWNLOAD`  
 **Repository:** [https://github.com/Amin-Sheikhy/Madar](https://github.com/Amin-Sheikhy/Madar)  
 **License:** [MIT License](LICENSE) (`Copyright (c) 2026 Amin Sheikhy`)
 
@@ -13,21 +14,24 @@ This repository is prepared for public technical review, including an applicatio
 ## What is in this source snapshot?
 
 - `app/` — application frontend (HTML/CSS/JavaScript), local Python service, PDF/vault modules, and bundled `pypdf` source with its BSD-3-Clause license.
-- `repair453/` — exact v4.53 overlay and one-click update PowerShell source for supported v4.51/v4.52 installations.
+- `repair453/` — historical v4.53 overlay and updater source.
+- `repair454/` — v4.54 storage-root overlay and exact-hash one-click updater for known v4.49–v4.53 installations.
 - `oneclick/` — source for the x64 Windows launcher and package builder; compiled executables and object files are intentionally omitted.
 - `docs/` — architecture, privacy/security notes, test status, and OpenAI review context.
-- `tests/` — isolated unit tests for managed-book deletion safeguards.
+- `tests/` — isolated unit tests for managed-book deletion safeguards, storage-path behavior, and v4.54 payload integrity.
 
-## Current v4.53 scope
+## v4.54 working-branch changes
 
 - Simplified learning overview dashboard.
 - Persian RTL UI and local course/learning data architecture.
 - Local PDF opening and managed library controls.
 - “My Books” open/delete controls. Delete removes only the app-managed copy in the Madar Books directory; the selected source file outside that directory is preserved.
 - Loopback API endpoint for book deletion with origin checks and explicit confirmation.
-- One-click update source supporting known v4.51 and v4.52 baseline hashes.
+- Portable installed-root detection: the parent of `App` is the runtime root; `Data`, `Books`, `Logs`, `Backups`, and `Reports` stay beneath it.
+- A one-click updater that accepts only exact known v4.49–v4.53 file baselines, backs up four program files, verifies the active `Data` and `Books` paths, and rolls back program files if post-update health checks fail.
+- The update does not move, delete, or rewrite learner records or managed books. v4.48 and unknown/modified baselines are rejected safely rather than guessed.
 
-Some AI learning workflows and target-Windows runtime paths remain unverified. See [test status](docs/TEST_STATUS.md).
+Some AI learning workflows and target-Windows runtime paths remain unverified. See [v4.54 test status](docs/TEST_STATUS_v4.54.md).
 
 ## Prerequisites and running from source
 
@@ -41,7 +45,7 @@ Some AI learning workflows and target-Windows runtime paths remain unverified. S
   By default, the service binds to `127.0.0.1:8765` (overridable via `MADAR_PORT`). Set `MADAR_HOME` to choose the installation/data root. In an installed layout where the launcher is at `<MADAR_HOME>/App/madar_launcher.py`, the launcher automatically uses the parent of `App` as that root. A source checkout (`app/`) defaults to `%LOCALAPPDATA%/Madar` on Windows (or `~/AppData/Local/Madar` if `LOCALAPPDATA` is unavailable), keeping runtime data outside the repository. The runtime folders `Data`, `Books`, `Logs`, `Backups`, and `Reports` are stored beneath the selected root; `MADAR_DATA_DIR` can override the `Data` directory.
 - **Run tests:**
   ```bash
-  python -m compileall -q app tests repair453
+  python -m compileall -q app tests repair453 repair454
   python -m unittest discover -s tests -v
   ```
 
@@ -63,11 +67,11 @@ Madar is not intended to expose its local service to a LAN or public network. Re
 
 ## Build/release caveat
 
-The included v4.53 one-click update sources are intended for the exact supported installation baselines described in the update script. The Windows PowerShell execution and end-to-end installation were **not tested on a target Windows machine** for this source snapshot. Do not treat the source or an unsigned binary as an audited or certified release.
+The v4.54 one-click update source accepts only exact v4.49–v4.53 baselines. The Windows PowerShell execution and end-to-end installation are **not tested on a target Windows machine**. CI can build and structurally verify the unsigned PE32+ installer, but this is not a Windows installation test, security audit, or certification.
 
 ## Repository maintenance
 
 - [Contributing policy](CONTRIBUTING.md) — contribution guidance for the MIT-licensed source.
 - [Security reporting](SECURITY.md)
-- GitHub Actions source checks: Python compilation, isolated unit tests, JavaScript syntax validation, and PowerShell syntax validation for the one-click update scripts.
+- GitHub Actions checks: Python compilation, isolated unit tests, JavaScript syntax, PowerShell syntax, and a Windows x64 PE32+ one-click installer build uploaded as a workflow artifact.
 - The test workflow does not claim target-Windows end-to-end coverage or an independent security audit.
