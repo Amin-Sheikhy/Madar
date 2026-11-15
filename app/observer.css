@@ -1,0 +1,11 @@
+.ob-card{margin:18px 0}.ob-card .form-grid{margin-bottom:14px}.ob-preview{display:block;max-width:600px;width:100%;max-height:260px;background:#162734;border-radius:12px;object-fit:contain;margin:12px auto}.ob-marks{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.ob-mark{font-size:.82rem;border:1px solid var(--border,#bdcdd5);border-radius:12px;padding:6px 10px}.ob-card .notice{line-height:1.8}#obs-status[data-kind=error]{color:#ad3131}#obs-status[data-kind=ok]{color:#148268}#observer-float{position:fixed;left:16px;bottom:16px;z-index:1999;background:#173e4d;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 13px;border-radius:12px;box-shadow:0 6px 30px #0004;font-size:.85rem}#observer-float[hidden]{display:none}#observer-float button{padding:4px 9px;background:#fff;color:#183b49;border:0;border-radius:7px;cursor:pointer}
+
+.ob-vision{border:1px solid var(--border,#c2d2da);border-radius:12px;padding:14px;margin:18px 0;background:var(--panel,#f7fafb)}.ob-vision-result{padding:9px 0}.ob-vision .choice{display:block;margin:10px 0}
+
+/* v4.45 observer control tower */
+.ob-monitor-dashboard{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;align-items:center;direction:rtl}
+.ob-monitor-dashboard span{border:1px solid var(--border,#bfcfd5);border-radius:11px;background:var(--panel,#f9fafb);padding:9px 13px;font-size:.8rem}
+.ob-monitor-dashboard b{font-variant-numeric:tabular-nums;margin-inline-start:4px}
+.ob-monitor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#obs-vision-status{min-height:34px;border-inline-start:3px solid #287998;padding:5px 9px;margin-top:10px;line-height:1.8}
+@media(max-width:600px){.ob-monitor-grid{grid-template-columns:1fr}.ob-monitor-dashboard span{flex:1 1 42%}.ob-vision .form-actions{display:flex;flex-wrap:wrap}}

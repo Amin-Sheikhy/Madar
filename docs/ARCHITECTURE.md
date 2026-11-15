@@ -1,0 +1,34 @@
+# Architecture
+
+## Application shape
+
+Madar is a local web UI served by a Python process. The Windows launcher starts the service and opens the browser at the loopback address. The frontend is Persian RTL HTML, CSS, and JavaScript; backend features are implemented in Python and use a local SQLite-backed vault for user-managed records and files.
+
+```text
+Windows launcher
+    └── Python local service (127.0.0.1:8765)
+          ├── HTML/CSS/JS learning UI
+          ├── local learning state and course views
+          ├── SQLite-backed file/project vault
+          ├── managed local PDF library (Books)
+          ├── PDF extraction / quality / OCR capability checks
+          ├── loopback API and Origin/Host validation
+          └── optional AI provider/account-usage integration
+```
+
+## Main modules
+
+- `app.js`, `extras.js`, `simple_nav.js`, `curriculum_tree.js`, `dashboard_v452.js`: application state/UI and learning overview/navigation.
+- `mastery_core.js`, `ai_assessment.js`, `learning_quality.js`: mastery/progression and assessment-oriented modules.
+- `knowledge_graph.js`: scientific knowledge network UI.
+- `observer.js`: learning-observer workflows; media-derived content requires user-approved input.
+- `vault_server.py`, `vault_ui.js`: local file/project vault.
+- `local_pdf.py`, `pdf_simple.js`, `pdf_quality.py`, `source_course.py`, `ai_pdf_reader.py`, `ai_pdf_batch.py`, `ocr_jobs.py`: PDF library and reading/outline/quality workflows.
+- `chatgpt_plan.py`, `chatgpt_ui.js`: Sign in with ChatGPT plan-usage connection path. It uses loopback OAuth with PKCE/state/nonce and local Windows DPAPI protection as implemented in source.
+- `ai_connection.py`: local provider credential storage helpers (Windows DPAPI where applicable).
+- `secure_backup.js`: user-triggered encrypted browser backup.
+- `madar_ai_server.py`: local HTTP API, validation, and provider routing.
+
+## Version boundary
+
+This snapshot is the v4.53 source state. The v4.53 update overlay patches the dashboard/PDF-related files and adds a guarded managed-book delete endpoint. It is not a general installer for a clean machine. The update script only accepts known file hashes for its stated v4.51/v4.52 baselines and performs a rollback path when an update step fails.

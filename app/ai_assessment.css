@@ -1,0 +1,6 @@
+.ai-assessment-status{border-inline-start:4px solid var(--accent,#5276ab);margin-bottom:16px}
+.ai-assessment-status .card-title{gap:12px;flex-wrap:wrap}
+.ai-assessment-notice{margin-top:16px;line-height:1.9;border:1px solid var(--border,#dde7ec);padding:14px;border-radius:12px;background:var(--surface,#f6fafb)}
+.ai-assessment-notice .form-actions{margin-top:10px}
+.ai-assessment-status .form-actions{margin-top:12px}
+@media(max-width:650px){.ai-assessment-notice .form-actions .button,.ai-assessment-status .form-actions .button{flex:1;min-width:140px}}

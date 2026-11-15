@@ -1,0 +1,36 @@
+/* Madar 4.51 — reading before configuration */
+.madar-reader-top{font-weight:750;white-space:nowrap}
+.madar-reader-active{overflow:hidden}
+.madar-reader[hidden]{display:none!important}
+.madar-reader{position:fixed;inset:0;z-index:99999;background:rgba(20,31,47,.63);padding:10px;direction:rtl;color:#253449;font-family:inherit}
+.reader-shell{display:flex;flex-direction:column;margin:auto;max-width:1700px;height:100%;background:#edf2f7;border-radius:15px;overflow:hidden;box-shadow:0 14px 70px rgba(0,0,0,.22)}
+.reader-header{background:white;display:flex;align-items:center;gap:10px;padding:10px 14px;min-height:66px;flex-wrap:wrap;border-bottom:1px solid #d8e2eb}
+.reader-header strong{font-size:1rem;max-width:36%;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+#reader-state{color:#55687a;font-size:.8rem;margin-inline-end:auto}
+.reader-header button{padding:8px 11px;color:#114f65;background:white;border:1px solid #c4d4dd;border-radius:10px;cursor:pointer;font:inherit}
+.reader-header button[data-reader="choose"]{background:#08788b;color:white;border-color:#08788b;font-weight:750}
+#reader-frame{width:100%;flex:1;min-height:0;background:#dadfe5;border:0}
+#reader-frame[hidden]{display:none}
+.reader-empty{margin:auto;padding:20px;text-align:center;color:#52687b}
+.reader-empty[hidden]{display:none}
+.reader-error{background:#fff3dc;padding:11px 15px;color:#80511f;border-bottom:1px solid #e8c88f;font-size:.85rem}
+.reader-error[hidden],.reader-library[hidden]{display:none}
+.reader-library{max-height:36vh;overflow:auto;background:#f9fbfc;padding:15px;border-bottom:1px solid #d5e3ed}
+.reader-library h3{margin:0 0 8px;font-size:1.04rem}
+.reader-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:8px}
+.reader-list button{padding:13px;border:1px solid #d0dfe8;border-radius:11px;background:white;cursor:pointer;text-align:right;overflow-wrap:anywhere;font:inherit}
+.reader-select-new{background:#e5f7f8!important;border-color:#08788b!important;font-weight:750!important}
+.madar-home-pdf{border-color:#08788b!important;background:#e5f7fa!important}
+.madar-home-pdf b{font-size:1rem!important}
+@media(max-width:690px){.madar-reader{padding:0}.reader-shell{border-radius:0}.reader-header{gap:5px}.reader-header strong{max-width:100%;width:100%}#reader-state{width:100%}.reader-header button{font-size:.8rem;padding:7px 8px}.madar-reader-top{font-size:.82rem}}
+
+/* v4.53 Books list: clear, compact open/delete controls */
+.reader-library-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:9px}
+.reader-library-head h3{margin:0;font-size:1.04rem}
+.reader-library-head span{font-size:.78rem;color:#607487}
+.reader-book-row{display:flex;align-items:stretch;gap:7px;min-width:0}
+.reader-book-open{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;text-align:right!important;overflow-wrap:anywhere}
+.reader-book-open small{font-size:.72rem;color:#617487;font-weight:400}
+.reader-book-delete{flex:0 0 auto;align-self:stretch;padding:9px 10px!important;border-color:#e7b6b6!important;background:#fff4f4!important;color:#a12c2c!important;font-size:.82rem!important;font-weight:750!important}
+.reader-book-delete:hover{background:#ffe7e7!important}
+@media(max-width:520px){.reader-book-row{gap:5px}.reader-book-delete{padding:7px!important;font-size:.75rem!important}.reader-library-head span{width:100%}}

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132b4a">
+  <meta name="description" content="دفتر مسیر یادگیری و پژوهش؛ آموزش پایتون و ریاضی، برنامه هفتگی، پژوهش و ثبت پیشرفت">
+  <title>مَدار v4.53 | داشبورد یادگیری و مطالعه</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="knowledge_graph.css">
+  <link rel="stylesheet" href="vault_ui.css">
+  <link rel="stylesheet" href="curriculum_tree.css">
+  <link rel="stylesheet" href="learning_quality.css">
+  <link rel="stylesheet" href="ai_assessment.css">
+  <link rel="stylesheet" href="observer.css">
+  <link rel="stylesheet" href="simple_nav.css">
+  <link rel="stylesheet" href="pdf_simple.css">
+  <link rel="stylesheet" href="dashboard_v452.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png" type="image/png">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="brand-emblem">◈</div><div><strong>مَدار</strong><small>آزمایشگاه رشد علمی</small></div></div>
+    <div class="sidebar-label">فضای کار</div>
+    <nav class="side-nav" aria-label="بخش‌های سایت">
+      <button class="nav-item active" data-nav="dashboard"><span class="nav-ico">◫</span> نمای امروز</button>
+      <button class="nav-item" data-nav="python"><span class="nav-ico">⌘</span> آموزش پایتون</button>
+      <button class="nav-item" data-nav="math"><span class="nav-ico">∑</span> آموزش ریاضی</button>
+      <button class="nav-item" data-nav="weekly"><span class="nav-ico">▦</span> برنامه هفتگی</button>
+      <button class="nav-item" data-nav="research"><span class="nav-ico">◉</span> دفتر پژوهش</button>
+      <button class="nav-item" data-nav="skills"><span class="nav-ico">✧</span> نقشه مهارت‌ها</button>
+      <button class="nav-item" data-nav="history"><span class="nav-ico">◷</span> تاریخچه و یادداشت‌ها</button>
+      <button class="nav-item" data-nav="review"><span class="nav-ico">▤</span> جعبهٔ لایتنر</button>
+      <button class="nav-item" data-nav="sciences"><span class="nav-ico">◇</span> علوم شخصی من</button>
+      <button class="nav-item" data-nav="library"><span class="nav-ico">▣</span> کتابخانهٔ فایل‌ها</button>
+      <button class="nav-item" data-nav="workspace"><span class="nav-ico">⚙</span> شخصی‌سازی</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="status-dot-line"><span class="status-dot"></span> داده‌های ذخیره‌شده روی دستگاه</div>
+      <p>داده‌های شخصی محلی‌اند؛ ارسال PDF یا صدا به AI فقط با اجازهٔ روشن انجام می‌شود. از سوابق پشتیبان بگیر.</p>
+      <button class="side-backup" data-action="export">↧ دریافت نسخه پشتیبان</button>
+      <button class="side-backup" data-action="import">↥ بازیابی از فایل پشتیبان</button>
+    </div>
+  </aside>
+  <main class="main-area">
+    <header class="topbar">
+      <div class="top-title">
+        <button id="mobile-menu" class="mobile-menu" aria-label="باز کردن منو">☰</button>
+        <div><div class="eyebrow" id="page-eyebrow">داشبورد شخصی</div><h1 id="page-title">مسیر امروز من</h1></div>
+      </div>
+      <div class="build-inline" title="v4.53 14050824 SU GPT-6 BOOKS_DELETE_DIRECT_DOWNLOAD" aria-label="شناسه نسخه">v4.53 14050824 SU GPT-6 BOOKS_DELETE_DIRECT_DOWNLOAD</div><div class="top-actions"><button id="theme-toggle" data-action="theme-toggle" class="button button-outline quick-theme" title="حالت تیره" aria-label="حالت تیره">☾</button><button class="button button-outline quick-settings" data-nav="workspace" title="تنظیمات ظاهر" aria-label="تنظیمات ظاهر">⚙</button><div class="date-pill" id="today-date"></div><button class="button button-outline top-backup" data-action="export">پشتیبان‌گیری</button><button class="avatar" title="محیط شخصی محلی؛ استفاده از AI با مجوز">م</button></div>
+    </header>
+    <div class="content" id="page-root" aria-live="polite"></div>
+    <footer class="app-footer">مَدار — v4.53 14050824 SU GPT-6 BOOKS_DELETE_DIRECT_DOWNLOAD • برنامه‌ریزی، آموزش و پژوهش • بدون تغییر خودکار کد یا معاملات</footer>
+  </main>
+</div>
+
+<div class="scroll-controls" aria-label="پیمایش صفحه">
+  <button type="button" data-scroll="top" title="رفتن به بالای صفحه" aria-label="رفتن به بالای صفحه">↑ بالا</button>
+  <button type="button" data-scroll="bottom" title="رفتن به پایین صفحه" aria-label="رفتن به پایین صفحه">↓ پایین</button>
+</div>
+<div id="modal-host"></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<input type="file" id="import-file" accept="application/json,.json" hidden>
+<script src="app.js"></script>
+<script src="extras.js"></script>
+<script src="knowledge_graph.js"></script>
+<script src="mastery_core.js"></script>
+<script src="offline_studio.js"></script>
+
+
+
+
+
+
+
+
+
+
+<script src="secure_backup.js"></script>
+<script src="pwa.js"></script>
+<script src="vault_ui.js"></script>
+<script src="curriculum_tree.js"></script>
+<script src="learning_quality.js"></script>
+<script src="ai_assessment.js"></script>
+<script src="observer.js"></script>
+<script src="chatgpt_ui.js"></script>
+<script src="simple_nav.js"></script>
+<script src="pdf_simple.js"></script>
+<script src="dashboard_v452.js"></script>
+</body>
+</html>

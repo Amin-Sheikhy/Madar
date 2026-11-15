@@ -1,0 +1,8 @@
+Madar source snapshot — licensing notice.
+
+The original Madar project source in this repository is licensed under the MIT License.
+See the root LICENSE file for the complete terms and copyright notice.
+
+Third-party components are not relicensed by the Madar MIT grant and retain their own
+licenses. The bundled pypdf component is distributed under BSD-3-Clause; see
+app/vendor/pypdf-LICENSE.txt and the component's source notices.

@@ -1,0 +1,55 @@
+/* v4.48 ergonomics: group secondary items, preserve modules, support pen/touch. */
+.madar-compact-nav{display:flex;flex-direction:column;gap:4px;min-height:0}
+.madar-nav-quick,.madar-nav-sections{display:grid;gap:5px}
+.madar-nav-section{border:1px solid rgba(181,213,233,.14);border-radius:13px;margin-top:5px;overflow:hidden}
+.madar-nav-section>summary{padding:11px 13px;color:#d7eaf1;display:flex;gap:11px;align-items:center;cursor:pointer;list-style:none;user-select:none;font-weight:700}
+.madar-nav-section>summary::-webkit-details-marker{display:none}
+.madar-nav-section[open]>summary{background:rgba(255,255,255,.07)}
+.madar-nav-section .madar-chevron{margin-right:auto;opacity:.65;transition:transform .2s}
+.madar-nav-section[open] .madar-chevron{transform:rotate(180deg)}
+.madar-nav-items{display:grid;gap:4px;padding:4px 6px 7px}
+.madar-nav-items .nav-item{font-size:calc(12px * var(--font-scale,1));padding:8px 11px;border-radius:9px}
+.madar-nav-items .nav-ico{font-size:16px;width:20px}
+.madar-nav-icon{width:25px;text-align:center}
+.madar-nav-quick .nav-item{min-height:43px}
+.madar-ai-shortcut{border:1px solid #4e95a3!important;color:#e8fff9!important;background:#164b5d!important}
+.madar-ai-status-dot{margin-right:auto;display:inline-block;background:#e9a755;width:7px;height:7px;border-radius:50%}
+.madar-fast-start{margin-bottom:20px;background:var(--white);border:1px solid var(--line);border-radius:18px;padding:20px}
+.madar-fast-header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.madar-fast-header h2{margin:0;font-size:calc(17px * var(--font-scale,1))}
+.madar-fast-header p{margin:0;font-size:calc(12px * var(--font-scale,1));color:var(--muted)}
+.madar-fast-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:13px}
+.madar-fast-grid button{border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;align-items:flex-start;text-align:right;padding:14px;gap:4px;min-height:108px;cursor:pointer}
+.madar-fast-grid button:hover,.madar-fast-grid button:focus-visible{border-color:var(--teal);outline:2px solid transparent;box-shadow:0 0 0 2px color-mix(in srgb,var(--teal),transparent 65%)}
+.madar-fast-grid button span{color:var(--primary);font-size:23px}
+.madar-fast-grid button b{font-size:calc(13px * var(--font-scale,1))}
+.madar-fast-grid button small{color:var(--muted);font-size:calc(11px * var(--font-scale,1));line-height:1.7}
+.madar-chatgpt-connect{border:1px solid #b9d7e1;border-radius:16px;padding:16px;background:var(--paper);margin:15px 0}
+.madar-chatgpt-head,.madar-chatgpt-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.madar-chatgpt-head strong{font-size:calc(16px * var(--font-scale,1))}
+.madar-chatgpt-head p{margin:3px 0}
+.madar-connection-state{white-space:nowrap;font-size:calc(12px * var(--font-scale,1));color:#987044}
+.madar-connection-state.is-connected{color:#1b8a67}
+.madar-chatgpt-actions{justify-content:flex-start;margin:12px 0}
+.madar-chatgpt-actions label{flex:1;min-width:220px;font-size:12px}
+.madar-chatgpt-actions select{width:100%}
+.madar-advanced-connect{border:1px dashed var(--line);border-radius:12px;padding:10px 13px;margin:10px 0}
+.madar-advanced-connect summary{cursor:pointer;font-weight:600;color:var(--primary)}
+.madar-advanced-connect .form-grid{margin-top:12px}
+@media(max-width:1050px){.madar-fast-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.madar-fast-grid{grid-template-columns:1fr 1fr;gap:8px}.madar-fast-grid button{padding:11px;min-height:104px}.madar-chatgpt-head{align-items:flex-start}}
+/* v4.50: progressive disclosure and a quiet home */
+.madar-nav-v450 .madar-nav-quick{gap:7px}
+.madar-nav-v450 .madar-pdf-nav{border:1px solid #54abb4!important;background:rgba(2,114,132,.25)!important;font-weight:800}
+.madar-more{margin-top:20px}
+.madar-more>summary{font-weight:550!important;font-size:.91rem}
+.madar-dashboard-extended{margin:16px 0;border:1px solid var(--line);border-radius:14px;background:var(--white);padding:8px 12px}
+.madar-dashboard-extended>summary{padding:9px;cursor:pointer;font-size:.88rem;color:var(--muted)}
+.madar-dashboard-extended .madar-dash-old{padding-top:18px}
+.madar-side-details>summary{font-size:.78rem;color:#bccbd7;cursor:pointer;padding:8px}
+.madar-side-details:not([open]){max-height:42px;overflow:hidden}
+.top-actions .top-backup[hidden],.top-actions .quick-settings[hidden]{display:none!important}
+.build-inline{white-space:nowrap;font-size:.76rem!important}
+.madar-fast-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.madar-fast-grid button{min-height:118px}
+@media(max-width:640px){.madar-fast-grid{grid-template-columns:1fr 1fr}.madar-fast-grid button{min-height:104px}}

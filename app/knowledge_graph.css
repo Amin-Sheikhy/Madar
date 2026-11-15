@@ -1,0 +1,22 @@
+/* Interdisciplinary knowledge, 3.20 */
+.knowledge-svg-scroll{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:14px;background:var(--white);padding:8px}
+.knowledge-svg-scroll svg{display:block;width:100%;min-width:570px;height:auto;max-height:420px}
+.graph-controls{display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px;margin:18px 0}
+.graph-controls .form-label{margin:0;display:block}
+.graph-controls select,.graph-controls input{margin-top:7px;width:100%}
+.knowledge-link{border:1px solid var(--line);border-radius:14px;padding:15px;margin:12px 0;background:var(--white)}
+.knowledge-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.knowledge-course{font-size:12px;color:var(--muted)}
+.knowledge-course span,.knowledge-pair span{color:var(--teal)}
+.knowledge-pair{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:9px 0}
+.knowledge-link .form-actions{flex-wrap:wrap;margin:10px 0 0}
+.knowledge-meta{font-size:12px;color:var(--amber)}
+.relationship-explain{border-bottom:1px solid var(--line);padding:12px 0}
+.relationship-explain p{margin:2px 0;font-size:13px;color:var(--muted)}
+.integrator-chart{border-radius:16px;padding:12px;background:var(--white);border:1px solid var(--line)}
+.integrator-chart svg{width:100%;max-height:270px}
+.acceptance-row{display:flex;gap:14px;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:14px 0}
+.acceptance-row strong{display:block}.acceptance-row p{margin:3px 0 0;font-size:12px;color:var(--muted)}
+.status-pill{padding:3px 9px;border-radius:50px;font-size:11px;white-space:nowrap;font-weight:bold}
+.status-pill.ready{background:#d9f4e6;color:#176446}.status-pill.pending{background:#fff0db;color:#916118}
+@media(max-width:840px){.graph-controls{grid-template-columns:1fr}.knowledge-svg-scroll svg{min-width:540px}.acceptance-row{align-items:flex-start}}

@@ -1,0 +1,7 @@
+/* Disk file vault, responsive RTL */
+.vault-file,.vault-project{border:1px solid var(--border,#d7dfe8);border-radius:12px;padding:13px;margin:9px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--card-bg,transparent)}
+.vault-file-title{display:flex;flex-direction:column;gap:4px;min-width:190px;flex:1}
+.vault-file{display:block}.vault-file-title{margin-bottom:5px}.vault-actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:12px}.vault-select{max-width:190px!important;padding:8px}
+.vault-log{padding:6px 0;border-bottom:1px solid var(--border,#dce4ec);word-break:break-word}
+#vault-preview textarea{width:100%;line-height:1.8}
+@media(max-width:760px){.vault-actions .button,.vault-actions .vault-select{max-width:none!important;flex:1 1 130px}.vault-file,.vault-project{padding:10px}}

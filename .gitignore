@@ -1,0 +1,30 @@
+# Local learner data and sensitive runtime artifacts
+madar_data/
+Data/
+Books/
+Backups/
+Reports/
+Logs/
+*.sqlite3
+*.sqlite3-journal
+*.dpapi
+chatgpt-host.json
+settings.json
+.env
+.env.*
+*.pdf
+
+# Python / local build output
+__pycache__/
+*.py[cod]
+*.o
+*.obj
+*.dll
+*.exe
+oneclick/build/
+
+# Browser profiles / test artifacts
+chrome/
+chrome_data/
+chrome.log
+chrome.pid
