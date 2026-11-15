@@ -62,7 +62,7 @@ static unsigned int copy_wide(WCHAR *dest, unsigned int used, unsigned int capac
 void mainCRTStartup(void) {
  DWORD n=GetModuleFileNameW(0,selfPath,32768u);
  if(!n || n>=32768u) ExitProcess(1);
- if(!SetEnvironmentVariableW(L"MADAR453_INSTALLER_FILE",selfPath)) ExitProcess(2);
+ if(!SetEnvironmentVariableW(L"MADAR454_INSTALLER_FILE",selfPath)) ExitProcess(2);
 
  UINT len=GetSystemDirectoryW(powershellPath,1024u);
  if(!len || len>=900u) ExitProcess(3);
@@ -74,7 +74,7 @@ void mainCRTStartup(void) {
  pos=copy_wide(commandLine,pos,32000u,powershellPath);
  if(pos+3u>=32000u) ExitProcess(5);
  commandLine[pos++]=L'"';commandLine[pos++]=L' ';
- pos=copy_ascii(commandLine,pos,32000u,MADAR453_BOOTSTRAP_ARGUMENTS);
+ pos=copy_ascii(commandLine,pos,32000u,MADAR454_BOOTSTRAP_ARGUMENTS);
  if(pos>=32000u) ExitProcess(6);
 
  startup.cb=(DWORD)sizeof(startup);
