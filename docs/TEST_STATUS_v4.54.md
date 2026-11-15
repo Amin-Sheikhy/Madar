@@ -14,7 +14,7 @@ The v4.54 candidate is being prepared on `codex/v4.54-storage-root`. It is not m
 | Python compilation | PENDING | `app`, `tests`, `repair453`, and `repair454`. |
 | JavaScript syntax | PENDING | Node.js checks the app and repair overlay source. |
 | PowerShell syntax | PENDING | Both v4.53 and v4.54 updater scripts and the v4.54 bootstrap. |
-| Windows x64 PE32+ installer build | PENDING | Cross-build uses GNU binutils and the repository's freestanding Windows launcher. |
+| Windows x64 PE32+ installer build | PENDING | Cross-build uses MinGW-w64 and the repository's freestanding Windows launcher. |
 | Embedded ZIP path/count/hash verification | PENDING | Build script validates exact entries, ZIP integrity, and SHA-256. |
 | Artifact upload to GitHub Actions | PENDING | Build artifact only; no GitHub Release is created. |
 | PowerShell update execution on target Windows | NOT_TESTED | Requires a real Windows installation and exact supported baseline. |
