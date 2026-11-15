@@ -10,6 +10,13 @@ This public review snapshot contains source code and documentation only. It inte
 
 A secret-pattern scan was run on the curated source set before packaging. The scan did not identify hard-coded API keys or GitHub tokens. Third-party `pypdf` attribution emails remain in its original license/source notices.
 
+## Runtime storage boundary
+
+- `MADAR_HOME` selects the local installation/runtime root. In an installed layout (`<MADAR_HOME>/App`), the launcher resolves the parent of `App` as that root.
+- `App` contains program files; `Data` contains local vault records and DPAPI-protected AI/account credentials; `Books` stores managed PDF copies; `Logs`, `Backups`, and `Reports` are sibling folders under the same root.
+- A source checkout defaults to `%LOCALAPPDATA%/Madar` on Windows (or `~/AppData/Local/Madar` when `LOCALAPPDATA` is unavailable), keeping runtime records outside the public repository. `MADAR_HOME` and `MADAR_DATA_DIR` remain explicit overrides.
+- The repository does not embed a maintainer-specific installation path.
+
 ## Local-only service boundary
 
 - The application server binds to `127.0.0.1` in source.
