@@ -13,7 +13,7 @@
 
 ## What the current source checks establish
 
-The workflow checks Python compilation, isolated unit tests, and JavaScript syntax. A successful run is a source-level check only; it does not establish a full Windows installation test, complete browser UI test, end-to-end AI workflow test, independent security audit, or OpenAI endorsement. See [test status](TEST_STATUS.md) for the v4.53 verification limits.
+The workflow checks Python compilation, isolated unit tests, JavaScript syntax, and PowerShell syntax for the one-click update scripts. A successful run is a source-level check only; it does not establish a full Windows installation test, complete browser UI test, end-to-end AI workflow test, independent security audit, or OpenAI endorsement. See [test status](TEST_STATUS.md) for the v4.53 verification limits.
 
 ## Ongoing maintainer checklist
 
