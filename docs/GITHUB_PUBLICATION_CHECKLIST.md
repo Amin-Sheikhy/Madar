@@ -9,11 +9,11 @@
 - **License:** MIT in the repository root; bundled third-party components retain their own license notices.
 - **Source CI:** the initial `Source checks` workflow completed successfully: [GitHub Actions run](https://github.com/Amin-Sheikhy/Madar/actions/runs/43748766592).
 - **GitHub Releases:** no formal GitHub Release was listed at the time of this review.
-- **Current maintenance work:** `codex/github-management` is a working branch. Its changes are not part of `main` unless and until they are reviewed and merged.
+- **Current maintenance work:** `codex/github-management` contains repository housekeeping; `codex/v4.54-storage-root` contains the v4.54 candidate. Neither branch is part of `main` unless and until reviewed and merged.
 
 ## What the current source checks establish
 
-The workflow checks Python compilation, isolated unit tests, JavaScript syntax, and PowerShell syntax for the one-click update scripts. A successful run is a source-level check only; it does not establish a full Windows installation test, complete browser UI test, end-to-end AI workflow test, independent security audit, or OpenAI endorsement. See [test status](TEST_STATUS.md) for the v4.53 verification limits.
+The workflow checks Python compilation, isolated unit tests, JavaScript syntax, and PowerShell syntax for the one-click update scripts. A successful run is a source-level check only; it does not establish a full Windows installation test, complete browser UI test, end-to-end AI workflow test, independent security audit, or OpenAI endorsement. See [v4.53 test status](TEST_STATUS.md) and [v4.54 candidate test status](TEST_STATUS_v4.54.md) for the separate verification limits.
 
 ## Ongoing maintainer checklist
 
