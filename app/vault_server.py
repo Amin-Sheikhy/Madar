@@ -18,7 +18,20 @@ from xml.etree import ElementTree
 MAX_FILE = 120 * 1024 * 1024
 MAX_PREVIEW = 45_000
 ROOT = Path(__file__).resolve().parent
-DATA_ROOT = Path(os.environ.get('MADAR_DATA_DIR', str(ROOT / 'madar_data'))).expanduser().resolve()
+
+
+def default_data_root() -> Path:
+    configured = os.environ.get('MADAR_DATA_DIR', '').strip()
+    if configured:
+        return Path(configured).expanduser().resolve()
+    if ROOT.name == 'App':
+        return (ROOT.parent / 'Data').resolve()
+    local_app_data = os.environ.get('LOCALAPPDATA')
+    base = Path(local_app_data) / 'Madar' if local_app_data else Path.home() / 'AppData' / 'Local' / 'Madar'
+    return (base / 'Data').resolve()
+
+
+DATA_ROOT = default_data_root()
 FILES = DATA_ROOT / 'files'
 IMPORT_ROOT_RAW = os.environ.get('MADAR_IMPORT_DIR', '').strip()  # legacy environment override, still supported
 SETTINGS_FILE = DATA_ROOT / 'settings.json'
