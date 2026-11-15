@@ -52,12 +52,7 @@ $oldByVersion = @{
   'vault_server.py'='4d4e1ba4e0b90fbca5013746e05704d8484fa1d2841b8b70884f5eb435742199'
   'madar_ai_server.py'='cc2ad43fa436b59927c5bfd9f6ea8652ddbcf9157169a1a0d66d9f76bf6a1ad5'
  }
- 'v4.53'=@{
-  'BUILD.txt'='51cbf184980987d7f71a0b9b8d4e4e66d9114387bb65602ec7c8e55f734806a3'
-  'madar_launcher.py'='4938715a8d0ea5141b1719288993715969d80de25954ca729deab0c3c0eebe50'
-  'vault_server.py'='4d4e1ba4e0b90fbca5013746e05704d8484fa1d2841b8b70884f5eb435742199'
-  'madar_ai_server.py'='89575e24f07415514b638c2ab8ed0beb5731b7d28193b408c2f38655cfa6cdf9'
- }
+
 }
 
 function Get-RootFromLauncher([string]$path) {
@@ -237,7 +232,7 @@ try {
   }
  } else {
   if (-not $oldByVersion.ContainsKey($script:oldVersion)) {
-   throw "This updater accepts exact v4.49-v4.53 installations. Detected $($script:oldVersion); no files were changed."
+   throw "This updater accepts exact v4.49-v4.52 installations. Detected $($script:oldVersion); no files were changed."
   }
   foreach ($name in @($oldByVersion[$script:oldVersion].Keys)) {
    $target = Join-Path $script:app $name
