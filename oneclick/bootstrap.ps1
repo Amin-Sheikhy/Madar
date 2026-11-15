@@ -7,6 +7,10 @@ try {
  Write-Host 'MADAR v4.53 - One Click Update' -ForegroundColor Cyan
  $exe=$env:MADAR453_INSTALLER_FILE
  if(-not $exe -or -not [IO.File]::Exists($exe)){throw 'Installer file cannot be located.'}
+ if(-not $env:MADAR_HOME){
+  $exeRoot=Split-Path -Parent $exe
+  if(Test-Path -LiteralPath (Join-Path $exeRoot 'App\madar_launcher.py') -PathType Leaf){$env:MADAR_HOME=$exeRoot}
+ }
  $bytes=[IO.File]::ReadAllBytes($exe)
  if($bytes.Length -lt 24){throw 'Installer is incomplete.'}
  $mark=[Text.Encoding]::ASCII.GetString($bytes,$bytes.Length-24,16)
@@ -38,7 +42,7 @@ try {
  $setup=Join-Path $work 'Install-Madar453-Books-Delete.ps1'
  if(-not [IO.File]::Exists($setup)){throw 'Upgrade script is missing.'}
  & $setup
- if($LASTEXITCODE -ne 0){throw 'Upgrade did not pass local verification. See the report in D:\Madar\Reports.'}
+ if($LASTEXITCODE -ne 0){throw 'Upgrade did not pass local verification. See the privacy-safe report in the installation root Reports folder.'}
  Write-Host 'Madar v4.53 is ready.' -ForegroundColor Green
  $outcome=0
 }catch{
