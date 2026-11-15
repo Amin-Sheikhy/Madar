@@ -27,7 +27,7 @@ def default_home() -> Path:
 
 
 BASE = Path(os.environ.get('MADAR_HOME') or default_home()).expanduser().resolve()
-DATA = BASE / 'Data'
+DATA = Path(os.environ.get('MADAR_DATA_DIR') or str(BASE / 'Data')).expanduser().resolve()
 LOGS = BASE / 'Logs'
 PORT = int(os.environ.get('MADAR_PORT', '8765'))
 URL = f'http://127.0.0.1:{PORT}'
