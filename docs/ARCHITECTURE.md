@@ -29,6 +29,13 @@ Windows launcher
 - `secure_backup.js`: user-triggered encrypted browser backup.
 - `madar_ai_server.py`: local HTTP API, validation, and provider routing.
 
+## Local storage layout
+
+- `MADAR_HOME` is the explicit installation/runtime root override.
+- In an installed layout (`<MADAR_HOME>/App/madar_launcher.py`), the launcher resolves the parent of `App` as the root. Program files live in `App`; runtime state and SQLite/DPAPI-backed credentials live in `Data`; managed PDFs live in the sibling `Books` folder; launcher logs, update backups, and diagnostic reports use `Logs`, `Backups`, and `Reports` under the same root.
+- When launched from the source checkout (`app/`), the default root is `%LOCALAPPDATA%/Madar` on Windows (or `~/AppData/Local/Madar` if `LOCALAPPDATA` is unavailable), so running the public source does not create personal runtime data inside the repository.
+- `MADAR_DATA_DIR` overrides the `Data` directory for advanced deployments. The managed `Books` directory is placed beside that configured data directory.
+
 ## Version boundary
 
 This snapshot is the v4.53 source state. The v4.53 update overlay patches the dashboard/PDF-related files and adds a guarded managed-book delete endpoint. It is not a general installer for a clean machine. The update script only accepts known file hashes for its stated v4.51/v4.52 baselines and performs a rollback path when an update step fails.
