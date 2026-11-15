@@ -15,7 +15,7 @@ This repository is prepared for public technical review, including an applicatio
 
 - `app/` — application frontend (HTML/CSS/JavaScript), local Python service, PDF/vault modules, and bundled `pypdf` source with its BSD-3-Clause license.
 - `repair453/` — historical v4.53 overlay and updater source.
-- `repair454/` — v4.54 storage-root overlay and exact-hash one-click updater for known v4.49–v4.53 installations.
+- `repair454/` — v4.54 storage-root overlay and exact-hash one-click updater for known v4.49–v4.52 installations.
 - `oneclick/` — source for the x64 Windows launcher and package builder; compiled executables and object files are intentionally omitted.
 - `docs/` — architecture, privacy/security notes, test status, and OpenAI review context.
 - `tests/` — isolated unit tests for managed-book deletion safeguards, storage-path behavior, and v4.54 payload integrity.
@@ -28,8 +28,8 @@ This repository is prepared for public technical review, including an applicatio
 - “My Books” open/delete controls. Delete removes only the app-managed copy in the Madar Books directory; the selected source file outside that directory is preserved.
 - Loopback API endpoint for book deletion with origin checks and explicit confirmation.
 - Portable installed-root detection: the parent of `App` is the runtime root; `Data`, `Books`, `Logs`, `Backups`, and `Reports` stay beneath it.
-- A one-click updater that accepts only exact known v4.49–v4.53 file baselines, backs up four program files, verifies the active `Data` and `Books` paths, and rolls back program files if post-update health checks fail.
-- The update does not move, delete, or rewrite learner records or managed books. v4.48 and unknown/modified baselines are rejected safely rather than guessed.
+- A one-click updater that accepts only exact known v4.49–v4.52 file baselines, backs up four program files, verifies the active `Data` and `Books` paths, and rolls back program files if post-update health checks fail.
+- The update does not move, delete, or rewrite learner records or managed books. v4.48, v4.53, and unknown/modified baselines are rejected safely rather than guessed.
 
 Some AI learning workflows and target-Windows runtime paths remain unverified. See [v4.54 test status](docs/TEST_STATUS_v4.54.md).
 
@@ -67,7 +67,7 @@ Madar is not intended to expose its local service to a LAN or public network. Re
 
 ## Build/release caveat
 
-The v4.54 one-click update source accepts only exact v4.49–v4.53 baselines. The Windows PowerShell execution and end-to-end installation are **not tested on a target Windows machine**. CI can build and structurally verify the unsigned PE32+ installer, but this is not a Windows installation test, security audit, or certification.
+The v4.54 one-click update source accepts only exact v4.49–v4.52 baselines. The Windows PowerShell execution and end-to-end installation are **not tested on a target Windows machine**. CI can build and structurally verify the unsigned PE32+ installer, but this is not a Windows installation test, security audit, or certification.
 
 ## Repository maintenance
 
