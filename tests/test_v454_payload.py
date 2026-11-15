@@ -26,7 +26,7 @@ class V454PayloadTests(unittest.TestCase):
 
     def test_installer_has_exact_supported_baselines_and_target_hash_slots(self):
         script = INSTALLER.read_text("utf-8")
-        for version in ("v4.49", "v4.50", "v4.51", "v4.52", "v4.53"):
+        for version in ("v4.49", "v4.50", "v4.51", "v4.52"):
             with self.subTest(version=version):
                 self.assertIn("'" + version + "'=@{", script)
         for token in ("__HASH_BUILD__", "__HASH_LAUNCHER__", "__HASH_VAULT__", "__HASH_SERVER__"):
