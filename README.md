@@ -38,7 +38,7 @@ Some AI learning workflows and target-Windows runtime paths remain unverified. S
   cd Madar
   python app/madar_launcher.py --server
   ```
-  By default, the service binds to `127.0.0.1:8765` (overridable via `MADAR_PORT`). The launcher uses `MADAR_HOME` (default `D:\Madar` on Windows) and `MADAR_DATA_DIR` to store local runtime data outside the repository.
+  By default, the service binds to `127.0.0.1:8765` (overridable via `MADAR_PORT`). Set `MADAR_HOME` to choose the installation/data root. In an installed layout where the launcher is at `<MADAR_HOME>/App/madar_launcher.py`, the launcher automatically uses the parent of `App` as that root. A source checkout (`app/`) defaults to `%LOCALAPPDATA%/Madar` on Windows (or `~/AppData/Local/Madar` if `LOCALAPPDATA` is unavailable), keeping runtime data outside the repository. The runtime folders `Data`, `Books`, `Logs`, `Backups`, and `Reports` are stored beneath the selected root; `MADAR_DATA_DIR` can override the `Data` directory.
 - **Run tests:**
   ```bash
   python -m compileall -q app tests repair453
