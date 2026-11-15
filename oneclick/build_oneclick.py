@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-"""Build the Windows x64 Madar one-click installer using local GNU binutils.
+"""Cross-build the Windows x64 Madar one-click installer with MinGW-w64.
 
-No network, Windows SDK, Go runtime, administrator privileges or signature is
-needed to build. PE imports reference the real Windows KERNEL32.dll. The tiny
-stub has no libc dependency; its verified ZIP overlay carries only the already
-reviewed v4.54 launcher and storage-root overlay files.
+The launcher is freestanding and links only the Windows KERNEL32 import library:
+no Windows SDK, Go runtime, C runtime, network access, or administrator rights
+are needed to build. The EXE embeds a hash-verified ZIP overlay.
 """
 from __future__ import annotations
 
 import base64
 import hashlib
 import io
-import re
+import shutil
 import struct
 import subprocess
 import zipfile
@@ -35,59 +34,6 @@ def run(*args: str) -> str:
     return p.stdout
 
 
-def convert_pcrel_coff(obj: Path) -> None:
-    """Repair ELF→COFF mapping of RIP-relative relocations (type 2→4).
-
-    The generated x64 source is freestanding PIE, so all COFF ADDR32
-    relocations in .text originated as ELF PC32 (verified via readelf below).
-    objcopy does not maintain this distinction automatically.
-    """
-    src = run("readelf", "-r", str(BUILD / "launcher-linux.o"))
-    # ELF uses explicit RELA addends, whereas the COFF form puts each addend
-    # into its four-byte displacement field. COFF REL32 is based at P+4, so
-    # the correct field value is ELF_addend + 4, not always zero.
-    elf_addends: dict[int, int] = {}
-    for line in src.splitlines():
-        if "R_X86_64_PC32" not in line:
-            continue
-        match = re.match(r"\s*([0-9a-fA-F]{8,16})\s+\S+\s+R_X86_64_PC32\s+\S+\s+.*?\s+([+-])\s+([0-9a-fA-F]+)\s*$", line)
-        if not match:
-            raise RuntimeError("Cannot decode ELF PC32 addend: " + line)
-        off = int(match.group(1), 16)
-        amount = int(match.group(3), 16)
-        elf_addends[off] = amount if match.group(2) == "+" else -amount
-    expected = len(elf_addends)
-    if expected < 2 or re.search(r"R_X86_64_(GOT|32\b|64\b)", src):
-        raise RuntimeError("Unexpected ELF relocation types; refusing PE conversion")
-    b = bytearray(obj.read_bytes())
-    sections = struct.unpack_from("<H", b, 2)[0]
-    header = 20 + struct.unpack_from("<H", b, 16)[0]
-    changed = 0
-    # Keep global variables with named symbols to avoid objcopy's unrelated
-    # ELF SECTION -> COFF FILE symbol mapping for local .bss references.
-    for i in range(sections):
-        off = header + 40 * i
-        name = b[off:off + 8].rstrip(b"\0")
-        if name != b".text":
-            continue
-        raw = struct.unpack_from("<I", b, off + 20)[0]
-        reloc = struct.unpack_from("<I", b, off + 24)[0]
-        count = struct.unpack_from("<H", b, off + 32)[0]
-        for j in range(count):
-            entry = reloc + 10 * j
-            va = struct.unpack_from("<I", b, entry)[0]
-            kind = struct.unpack_from("<H", b, entry + 8)[0]
-            if kind == 2:  # IMAGE_REL_AMD64_ADDR32, incorrectly from ELF PC32
-                if va not in elf_addends:
-                    raise RuntimeError(f"Unexpected COFF ADDR32 at 0x{va:x}")
-                struct.pack_into("<i", b, raw + va, elf_addends[va] + 4)
-                struct.pack_into("<H", b, entry + 8, 4)  # IMAGE_REL_AMD64_REL32
-                changed += 1
-            elif kind != 4:
-                raise RuntimeError(f"Unexpected PE .text relocation type {kind}")
-    if changed != expected:
-        raise RuntimeError(f"PE relocation mismatch: {changed} / {expected}")
-    obj.write_bytes(b)
 
 
 def make_payload() -> bytes:
@@ -141,6 +87,12 @@ def make_payload() -> bytes:
 def build() -> None:
     if not (PROJECT / "app" / "BUILD.txt").read_text("utf-8").startswith("v4.54 "):
         raise RuntimeError("Not building from Madar v4.54")
+    compiler = shutil.which("x86_64-w64-mingw32-gcc")
+    if not compiler:
+        raise RuntimeError("MinGW-w64 cross compiler is missing; install gcc-mingw-w64-x86-64")
+    objdump = shutil.which("x86_64-w64-mingw32-objdump") or shutil.which("objdump")
+    if not objdump:
+        raise RuntimeError("GNU objdump is required to verify the PE output")
     BUILD.mkdir(exist_ok=True)
     package = make_payload()
     digest = hashlib.sha256(package).hexdigest()
@@ -153,32 +105,26 @@ def build() -> None:
         raise RuntimeError("Windows launch command is too long or non-ASCII")
     (BUILD / "encoded_bootstrap.h").write_text(
         '#define MADAR454_BOOTSTRAP_ARGUMENTS "' + command + '"\n', encoding="ascii")
-    run("as", "--64", "-o", str(BUILD / "kernel32stub-linux.o"), "kernel32stub.s")
-    run("objcopy", "-O", "pe-x86-64", str(BUILD / "kernel32stub-linux.o"),
-        str(BUILD / "kernel32stub.obj"))
-    run("ld", "-m", "i386pep", "--dll", "-e", "0", "-o", str(BUILD / "kernel32stub.dll"),
-        str(BUILD / "kernel32stub.obj"), "kernel32.def", "--out-implib", str(BUILD / "libkernel32.a"))
-    run("gcc", "-c", "-O2", "-Werror", "-Wall", "-fshort-wchar", "-fno-stack-protector",
-        "-ffreestanding", "-fno-asynchronous-unwind-tables", "-fpie", "-fno-builtin",
-        "-m64", "-o", str(BUILD / "launcher-linux.o"), "launcher.c")
-    run("objcopy", "--remove-section", ".comment", "--remove-section", ".note.GNU-stack",
-        "-O", "pe-x86-64", str(BUILD / "launcher-linux.o"), str(BUILD / "launcher.obj"))
-    convert_pcrel_coff(BUILD / "launcher.obj")
-    run("ld", "-m", "i386pep", "-o", str(BUILD / "Madar454-OneClick-D.exe"),
-        str(BUILD / "launcher.obj"), str(BUILD / "libkernel32.a"),
-        "--subsystem", "windows", "-e", "mainCRTStartup", "--image-base", "0x140000000")
-    pe = (BUILD / "Madar454-OneClick-D.exe").read_bytes()
+    object_file = BUILD / "launcher.obj"
+    executable = BUILD / "Madar454-OneClick-D.exe"
+    run(compiler, "-c", "-O2", "-Werror", "-Wall", "-fshort-wchar",
+        "-fno-stack-protector", "-ffreestanding", "-fno-asynchronous-unwind-tables",
+        "-fno-builtin", "-m64", "-o", str(object_file), "launcher.c")
+    run(compiler, "-nostdlib", "-Wl,-e,mainCRTStartup", "-Wl,--subsystem,windows",
+        "-Wl,--image-base,0x140000000", "-Wl,--no-insert-timestamp",
+        "-o", str(executable), str(object_file), "-lkernel32")
+    pe = executable.read_bytes()
     if pe[:2] != b"MZ":
         raise RuntimeError("Produced file lacks Windows PE signature")
     pe_off = struct.unpack_from("<I", pe, 0x3C)[0]
     if pe[pe_off:pe_off + 4] != b"PE\0\0" or struct.unpack_from("<H", pe, pe_off + 4)[0] != 0x8664:
         raise RuntimeError("Invalid Windows x64 PE header")
-    info = run("objdump", "-p", str(BUILD / "Madar454-OneClick-D.exe"))
+    info = run(objdump, "-p", str(executable))
     if ("DLL Name: KERNEL32.dll" not in info or "Subsystem\t\t00000002" not in info
             or "CreateProcessW" not in info or "GetSystemDirectoryW" not in info
-            or "WinExec" in info):
-        raise RuntimeError("Unexpected PE subsystem or imports")
-    disassembly = run("objdump", "-d", str(BUILD / "Madar454-OneClick-D.exe"))
+            or "WinExec" in info or "MSVCRT" in info or "ucrtbase" in info):
+        raise RuntimeError("Unexpected PE subsystem, imports, or C runtime dependency")
+    disassembly = run(objdump, "-d", str(executable))
     if "lea    0x0(%rip),%rbx" in disassembly:
         raise RuntimeError("PE code references itself in place of selfPath")
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
@@ -190,10 +136,10 @@ def build() -> None:
     assert hashlib.sha256(embedded).hexdigest() == digest
     with zipfile.ZipFile(io.BytesIO(embedded)) as z:
         assert z.testzip() is None and len(z.namelist()) == 5
-    print("PASS Windows PE32+ x86-64 GUI, KERNEL32 imports, embedded ZIP hash")
+    print("PASS Windows PE32+ x86-64 GUI, KERNEL32-only imports, embedded ZIP hash")
     print("Installer bytes:", len(verify))
     print("Installer SHA256:", hashlib.sha256(verify).hexdigest())
-    print("PowerShell Windows runtime: NOT_TESTED")
+    print("Windows PowerShell execution: NOT_TESTED")
 
 
 if __name__ == "__main__":
