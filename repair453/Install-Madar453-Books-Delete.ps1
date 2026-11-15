@@ -1,9 +1,42 @@
 # Madar v4.51/v4.52 -> v4.53 one-click update. Exact hash precheck + rollback.
-# Only known app files under D:\Madar\App are replaced.
+# Only known app files under MADAR_HOME\App are replaced.
 [CmdletBinding()]
 param()
 $ErrorActionPreference='Stop'
-$base='D:\Madar'
+function Resolve-MadarHome {
+ $candidates=@()
+ if($env:MADAR_HOME){$candidates+=([string]$env:MADAR_HOME)}
+ $installer=$env:MADAR453_INSTALLER_FILE
+ if($installer){
+  $installerRoot=Split-Path -Parent $installer
+  if(Test-Path -LiteralPath (Join-Path $installerRoot 'App\madar_launcher.py') -PathType Leaf){$candidates+=$installerRoot}
+ }
+ foreach($candidate in $candidates){
+  try{
+   $full=[IO.Path]::GetFullPath([string]$candidate)
+   if(Test-Path -LiteralPath (Join-Path $full 'App\madar_launcher.py') -PathType Leaf){return $full}
+  }catch{}
+ }
+ # If Madar is running, infer its installation root from the exact launcher path.
+ try{
+  foreach($proc in @(Get-CimInstance Win32_Process -Filter "Name = 'pythonw.exe' OR Name = 'python.exe'")){
+   $cmd=[string]$proc.CommandLine
+   if(-not $cmd -or $cmd -notmatch '--server'){continue}
+   $match=[regex]::Match($cmd,'(?i)"(?<launcher>[^"]*madar_launcher\.py)"')
+   if(-not $match.Success){continue}
+   $appDir=Split-Path -Parent $match.Groups['launcher'].Value
+   if((Split-Path -Leaf $appDir) -ieq 'App'){
+    $candidate=Split-Path -Parent $appDir
+    if(Test-Path -LiteralPath (Join-Path $candidate 'App\madar_launcher.py') -PathType Leaf){return [IO.Path]::GetFullPath($candidate)}
+   }
+  }
+ }catch{}
+ # Backward compatibility for existing v4.51/v4.52 installations.
+ $legacy='D:\Madar'
+ if(Test-Path -LiteralPath (Join-Path $legacy 'App\madar_launcher.py') -PathType Leaf){return $legacy}
+ throw 'Madar installation root could not be resolved safely. Set MADAR_HOME to the installation root, or run the updater from the installation root containing App\madar_launcher.py.'
+}
+$base=Resolve-MadarHome
 $app=Join-Path $base 'App'
 $payload=Join-Path $PSScriptRoot 'patch'
 $launcher=Join-Path $app 'madar_launcher.py'
@@ -83,7 +116,7 @@ function Test-DeleteEndpoint{
 }
 try{
  Write-Host 'MADAR v4.53 | Books delete + direct update' -ForegroundColor Cyan
- if(-not (Test-Path -LiteralPath $launcher -PathType Leaf)){throw 'Madar installation was not found in D:\Madar.'}
+ if(-not (Test-Path -LiteralPath $launcher -PathType Leaf)){throw 'Madar installation was not found at the resolved MADAR_HOME root.'}
  $build=(Get-Content -LiteralPath (Join-Path $app 'BUILD.txt') -Raw -Encoding UTF8).Trim()
  $version=if($build -like 'v4.51 *'){'v4.51'}elseif($build -like 'v4.52 *'){'v4.52'}elseif($build -like 'v4.53 *'){'v4.53'}else{$null}
  if(-not $version){throw 'This one-click update supports Madar v4.51, v4.52 or the exact v4.53 target.'}
@@ -121,7 +154,7 @@ try{
   finally{$client.Close()}
  }
  $running=@(Get-MadarProcesses)
- if($hadServer -and $running.Count -eq 0){throw 'The running Madar server could not be matched to the D: launcher.'}
+ if($hadServer -and $running.Count -eq 0){throw 'The running Madar server could not be matched to the resolved installation launcher.'}
  if($running.Count -gt 1){throw 'Multiple Madar server processes were found; update stopped for safety.'}
  if($running.Count -eq 1 -and $running[0].ExecutablePath){$python=$running[0].ExecutablePath}
  if(-not $python){$command=Get-Command 'pythonw.exe' -ErrorAction SilentlyContinue;if(-not $command){$command=Get-Command 'python.exe' -ErrorAction SilentlyContinue};if($command){$python=$command.Source}}
