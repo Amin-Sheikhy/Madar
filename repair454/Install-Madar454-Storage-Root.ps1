@@ -1,4 +1,4 @@
-# Madar v4.49-v4.53 -> v4.54 one-click storage-root update.
+# Madar v4.49-v4.52 -> v4.54 one-click storage-root update.
 # Exact baseline hashes, program-only backup, local health/path verification, rollback.
 [CmdletBinding()]
 param()
