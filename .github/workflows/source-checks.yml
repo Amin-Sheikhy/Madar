@@ -36,3 +36,21 @@ jobs:
         run: |
           find app repair453/patch -type f -name '*.js' ! -path '*/vendor/*' -print0 \
             | xargs -0 -r -n1 node --check
+
+      - name: Validate PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = @(
+            "oneclick/bootstrap.ps1",
+            "repair453/Install-Madar453-Books-Delete.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $parseErrors = $null
+            $fullPath = Join-Path $PWD $file
+            [System.Management.Automation.Language.Parser]::ParseFile($fullPath, [ref]$tokens, [ref]$parseErrors) | Out-Null
+            if ($parseErrors.Count -gt 0) {
+              $parseErrors | ForEach-Object { Write-Error $_.Message }
+              exit 1
+            }
+          }
