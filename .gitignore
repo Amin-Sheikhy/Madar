@@ -22,6 +22,7 @@ __pycache__/
 *.dll
 *.exe
 oneclick/build/
+dist/
 
 # Browser profiles / test artifacts
 chrome/
