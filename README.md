@@ -69,5 +69,5 @@ The included v4.53 one-click update sources are intended for the exact supported
 
 - [Contributing policy](CONTRIBUTING.md) — contribution guidance for the MIT-licensed source.
 - [Security reporting](SECURITY.md)
-- GitHub Actions source checks: Python compilation, isolated unit tests, and JavaScript syntax validation.
+- GitHub Actions source checks: Python compilation, isolated unit tests, JavaScript syntax validation, and PowerShell syntax validation for the one-click update scripts.
 - The test workflow does not claim target-Windows end-to-end coverage or an independent security audit.
