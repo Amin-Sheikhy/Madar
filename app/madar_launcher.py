@@ -13,7 +13,20 @@ import webbrowser
 from pathlib import Path
 
 APP_DIR = Path(__file__).resolve().parent
-BASE = Path(os.environ.get('MADAR_HOME', r'D:\Madar'))
+
+
+def default_home() -> Path:
+    # Installed packages keep runtime files beside the App directory.
+    if APP_DIR.name == 'App':
+        return APP_DIR.parent
+    # Source checkouts keep runtime data outside the public repository.
+    local_app_data = os.environ.get('LOCALAPPDATA')
+    if local_app_data:
+        return Path(local_app_data) / 'Madar'
+    return Path.home() / 'AppData' / 'Local' / 'Madar'
+
+
+BASE = Path(os.environ.get('MADAR_HOME') or default_home()).expanduser().resolve()
 DATA = BASE / 'Data'
 LOGS = BASE / 'Logs'
 PORT = int(os.environ.get('MADAR_PORT', '8765'))
