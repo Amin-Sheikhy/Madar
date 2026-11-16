@@ -39,7 +39,7 @@ def run(*args: str) -> str:
 def make_payload() -> bytes:
     patch_dir = PROJECT / "repair454" / "patch"
     installer_path = PROJECT / "repair454" / "Install-Madar454-Storage-Root.ps1"
-    names = ("BUILD.txt", "madar_launcher.py", "vault_server.py", "madar_ai_server.py")
+    names = ("BUILD.txt", "madar_launcher.py", "vault_server.py", "madar_ai_server.py", "local_pdf.py")
     if not installer_path.is_file():
         raise RuntimeError("v4.54 update script is missing")
     installer = installer_path.read_text("utf-8")
@@ -48,6 +48,7 @@ def make_payload() -> bytes:
         "madar_launcher.py": "__HASH_LAUNCHER__",
         "vault_server.py": "__HASH_VAULT__",
         "madar_ai_server.py": "__HASH_SERVER__",
+        "local_pdf.py": "__HASH_LOCAL_PDF__",
     }
     for name in names:
         patch_file = patch_dir / name
@@ -77,7 +78,7 @@ def make_payload() -> bytes:
                 z.write(item, arcname)
     package = blob.getvalue()
     with zipfile.ZipFile(io.BytesIO(package)) as z:
-        if z.testzip() is not None or len(z.namelist()) != 5:
+        if z.testzip() is not None or len(z.namelist()) != len(names) + 1:
             raise RuntimeError("The v4.54 embedded package failed ZIP validation")
         if "__HASH_" in z.read("Install-Madar454-Storage-Root.ps1").decode("utf-8"):
             raise RuntimeError("The embedded installer contains unresolved file hashes")
