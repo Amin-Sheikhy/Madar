@@ -12,6 +12,7 @@ import base64, hashlib, hmac, json, os, re, secrets, threading, time, uuid
 import urllib.parse, urllib.request, urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from datetime import datetime, timezone
 import ai_connection
 import vault_server as vault
 
@@ -34,6 +35,61 @@ def _unb64(s):
     if not isinstance(s,str) or len(s)>20000 or not re.fullmatch(r'[A-Za-z0-9_-]+',s):raise ValueError('قالب توکن نامعتبر است.')
     return base64.urlsafe_b64decode(s+'='*((-len(s))%4))
 
+def _epoch_time(value):
+    if isinstance(value,bool): return None
+    if isinstance(value,(int,float)): return float(value)
+    if not isinstance(value,str) or not value: return None
+    try: return float(value)
+    except ValueError: pass
+    try:
+        parsed=datetime.fromisoformat(value.replace('Z','+00:00'))
+        if parsed.tzinfo is None: parsed=parsed.replace(tzinfo=timezone.utc)
+        return parsed.timestamp()
+    except (ValueError,OverflowError):
+        return None
+
+def _safe_error_id(value):
+    return value if isinstance(value,str) and re.fullmatch(r'[A-Za-z0-9_.:-]{1,120}',value) else ''
+
+def _http_error_message(exc, url, data=None):
+    """Expose only machine-readable diagnostics; never echo response text or credentials."""
+    try:
+        raw=exc.read(65536)
+        body=json.loads(raw.decode('utf8')) if raw else {}
+    except Exception:
+        body={}
+    root=body if isinstance(body,dict) else {}
+    if isinstance(root.get('error'),dict): root=root['error']
+    elif isinstance(root.get('detail'),dict): root=root['detail']
+    code=root.get('error') if isinstance(root.get('error'),str) else root.get('code')
+    if not isinstance(code,str): code=root.get('type')
+    reason=root.get('error_reason') or root.get('reason')
+    param=root.get('param')
+    grant=''
+    if isinstance(data,(bytes,bytearray)):
+        try: grant=urllib.parse.parse_qs(data.decode('ascii')).get('grant_type',[''])[0]
+        except Exception: pass
+    path=urllib.parse.urlsplit(url).path
+    if url==TOKEN and grant=='refresh_token': stage='TOKEN_REFRESH'
+    elif url==TOKEN and grant=='authorization_code': stage='TOKEN_EXCHANGE'
+    elif url==API+'/models': stage='MODEL_CATALOG'
+    elif url==API+'/responses': stage='RESPONSES_API'
+    elif url==JWKS: stage='IDENTITY_KEYS'
+    elif path.endswith('/.well-known/openid-configuration'): stage='OIDC_DISCOVERY'
+    else: stage='CHATGPT_SERVICE'
+    parts=[stage+': HTTP '+str(exc.code)]
+    safe_code=_safe_error_id(code)
+    safe_reason=_safe_error_id(reason)
+    safe_param=_safe_error_id(param)
+    request_id=''
+    try: request_id=_safe_error_id(exc.headers.get('x-request-id') or exc.headers.get('request-id'))
+    except Exception: pass
+    if safe_code: parts.append('error='+safe_code)
+    if safe_reason: parts.append('reason='+safe_reason)
+    if safe_param: parts.append('param='+safe_param)
+    if request_id: parts.append('requestId='+request_id)
+    return '; '.join(parts)
+
 def _request_json(url, *, method='GET', data=None, headers=None, timeout=20, limit=2_000_000):
     req=urllib.request.Request(url, data=data, headers=headers or {}, method=method)
     try:
@@ -42,8 +98,7 @@ def _request_json(url, *, method='GET', data=None, headers=None, timeout=20, lim
             if len(body)>limit:raise ValueError('پاسخ سرویس از حجم مجاز بیشتر است.')
             return json.loads(body)
     except urllib.error.HTTPError as e:
-        # Never log tokens, authorization codes, server response payloads or user input.
-        raise RuntimeError('سرویس ورود/مدل ChatGPT با کد HTTP '+str(e.code)+' پاسخ داد.') from None
+        raise RuntimeError(_http_error_message(e,url,data)) from None
 
 def _load():
     if os.name!='nt' or not VAULT.exists():return {}
@@ -133,9 +188,14 @@ def _public_status():
     scopes=set(profile.get('scope','').split())
     active=bool(profile.get('client_id') and profile.get('subject') and profile.get('refresh_token'))
     permission=active and {'resource.invoke','chatgpt.tokens.use.direct'}.issubset(scopes)
+    now=time.time()
+    try: expires_at=float(profile.get('saved_at',0))+float(profile.get('expires_in',0))
+    except (TypeError,ValueError): expires_at=0
+    earliest=_epoch_time(profile.get('earliest_refresh_at'))
     return {'connected':active,'permission':permission,'provider':'chatgpt-plan','email':profile.get('email','') if active else '',
             'model':profile.get('model','') if permission else '',
-            'expired':time.time()>float(profile.get('saved_at',0))+float(profile.get('expires_in',0))-90 if active else False,
+            'expired':now>=expires_at if active else False,
+            'refreshReady':earliest is None or now>=earliest if active else False,
             'message':'متصل به سهمیهٔ ChatGPT' if permission else ('ورود انجام شده، ولی مجوز استفاده از سهمیه فعال نیست.' if active else 'برای اتصال بدون کلید API، با حساب ChatGPT وارد شو.')}
 
 def status():return _public_status()
@@ -243,6 +303,9 @@ def _complete_callback(query, attempt):
        'access_token':token.get('access_token',''),'refresh_token':token.get('refresh_token',''),
        'id_token':token['id_token'],'scope':scope,'saved_at':time.time(),
        'expires_in':token.get('expires_in',3600),'model':prior.get('model','')}
+    earliest=token.get('earliest_refresh_at')
+    if isinstance(earliest,(str,int,float)) and not isinstance(earliest,bool):
+        record['earliest_refresh_at']=earliest
     if not isinstance(record['access_token'],str) or not isinstance(record['refresh_token'],str) or not record['refresh_token']:
         raise RuntimeError('مجوز قابل‌نوسازی صادر نشد.')
     with LOCK:
@@ -261,7 +324,18 @@ def _session():
         d=_load()
         if not d.get('refresh_token') or not {'resource.invoke','chatgpt.tokens.use.direct'}.issubset(set(d.get('scope','').split())):
             raise RuntimeError('ابتدا با حساب ChatGPT وارد شو و مجوز استفاده از سهمیه را صادر کن.')
-        if time.time()<float(d.get('saved_at',0))+float(d.get('expires_in',0))-90:return d
+        now=time.time()
+        try: expires_at=float(d.get('saved_at',0))+float(d.get('expires_in',0))
+        except (TypeError,ValueError): expires_at=0
+        # Follow the SIWC refresh window: wait until both the near-expiry window
+        # and OpenAI's earliest_refresh_at have been reached.
+        if now < expires_at-60:return d
+        earliest=_epoch_time(d.get('earliest_refresh_at'))
+        if earliest is not None and now < earliest:
+            if now >= expires_at:
+                wait=max(1,int(earliest-now))
+                raise RuntimeError('REFRESH_NOT_READY: توکن دسترسی منقضی شده است؛ زمان مجاز نوسازی OpenAI حدود '+str(wait)+' ثانیهٔ دیگر فرا می‌رسد.')
+            return d
         form=urllib.parse.urlencode({'grant_type':'refresh_token','client_id':d['client_id'],
             'refresh_token':d['refresh_token'],'resource':RESOURCE}).encode('ascii')
         response=_request_json(TOKEN,method='POST',data=form,headers={'Content-Type':'application/x-www-form-urlencoded'})
@@ -269,6 +343,11 @@ def _session():
             raise RuntimeError('نوسازی مجوز ChatGPT موفق نبود؛ دوباره وارد شو.')
         d.update({'access_token':response['access_token'],'refresh_token':response['refresh_token'],
             'scope':response.get('scope',d['scope']),'saved_at':time.time(),'expires_in':response.get('expires_in',3600)})
+        # A successful rotation replaces the previous timing hint as well.
+        d.pop('earliest_refresh_at',None)
+        refreshed_earliest=response.get('earliest_refresh_at')
+        if isinstance(refreshed_earliest,(str,int,float)) and not isinstance(refreshed_earliest,bool):
+            d['earliest_refresh_at']=refreshed_earliest
         _save(d)
         return d
 
@@ -276,7 +355,9 @@ def _session():
 def models():
     account=_session()
     data=_request_json(API+'/models',headers={'Authorization':'Bearer '+account['access_token']},timeout=25)
-    return [{'slug':x['slug'],'name':str(x.get('display_name') or x['slug'])[:100]} for x in data.get('models',[])
+    if not isinstance(data,dict) or not isinstance(data.get('models'),list):
+        raise RuntimeError('MODEL_CATALOG_INVALID: پاسخ فهرست مدل‌های ChatGPT ساختار معتبر ندارد.')
+    return [{'slug':x['slug'],'name':str(x.get('display_name') or x['slug'])[:100]} for x in data['models']
         if isinstance(x,dict) and x.get('visibility')=='list' and isinstance(x.get('slug'),str) and re.fullmatch(r'[A-Za-z0-9._:-]{1,96}',x['slug'])][:150]
 
 
@@ -328,7 +409,7 @@ def stream_response(payload, *, timeout=150):
                 elif tp in ('response.failed','response.incomplete','error'):
                     raise RuntimeError('مدل درخواست را تکمیل نکرد؛ وضعیت مصرف حساب را بررسی کن.')
     except urllib.error.HTTPError as e:
-        raise RuntimeError('سرویس ChatGPT پاسخ HTTP '+str(e.code)+' داد؛ مجوز یا سقف مصرف را بررسی کن.') from None
+        raise RuntimeError(_http_error_message(e,API+'/responses',json.dumps(body,ensure_ascii=False).encode('utf8'))) from None
     if completed is None:raise RuntimeError('اتصال پیش از دریافت response.completed قطع شد؛ هیچ نتیجه‌ای تأیید نمی‌شود.')
     text=''.join(deltas)
     if not text:

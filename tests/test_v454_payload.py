@@ -18,16 +18,23 @@ BUILD_ID = "v4.54 14050824 SU GPT-6 PORTABLE_STORAGE_ROOT_D"
 
 class V454PayloadTests(unittest.TestCase):
     def test_build_identity_is_consistent(self):
-        self.assertEqual((APP / "BUILD.txt").read_text("utf-8").strip(), BUILD_ID)
         self.assertEqual((PATCH / "BUILD.txt").read_text("utf-8").strip(), BUILD_ID)
-        server = (APP / "madar_ai_server.py").read_text("utf-8")
-        self.assertIn("'version':'v4.54'", server)
-        self.assertIn("MADAR v4.54 |", server)
+        current_build = (APP / "BUILD.txt").read_text("utf-8").strip()
+        self.assertTrue(current_build.startswith("v4.55 "))
+        old_server = (PATCH / "madar_ai_server.py").read_text("utf-8")
+        current_server = (APP / "madar_ai_server.py").read_text("utf-8")
+        self.assertIn("'version':'v4.54'", old_server)
+        self.assertIn("MADAR v4.54 |", old_server)
+        self.assertIn("'version':'v4.55'", current_server)
+        self.assertIn("MADAR v4.55 |", current_server)
 
-    def test_overlay_files_match_the_application_source(self):
-        for name in ("BUILD.txt", "madar_launcher.py", "vault_server.py", "madar_ai_server.py", "local_pdf.py"):
+    def test_unchanged_v454_overlay_files_match_the_application_source(self):
+        for name in ("madar_launcher.py", "vault_server.py", "local_pdf.py"):
             with self.subTest(name=name):
                 self.assertEqual((PATCH / name).read_bytes(), (APP / name).read_bytes())
+        self.assertEqual((PATCH / "BUILD.txt").read_text("utf-8").strip(), BUILD_ID)
+        old_server = (PATCH / "madar_ai_server.py").read_text("utf-8")
+        self.assertIn("'version':'v4.54'", old_server)
 
     def test_installer_has_exact_supported_baselines_and_target_hash_slots(self):
         script = INSTALLER.read_text("utf-8")

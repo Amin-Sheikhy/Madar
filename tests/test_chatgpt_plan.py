@@ -67,7 +67,8 @@ class ChatGPTPlanRefreshTests(unittest.TestCase):
         response = {"access_token": "ACCESS_NEW", "refresh_token": "REFRESH_NEW", "expires_in": 3600}
         with patch.object(plan, "_load", return_value=saved), \
              patch.object(plan.time, "time", return_value=4550), \
-             patch.object(plan, "_request_json", return_value=response) as request:
+             patch.object(plan, "_request_json", return_value=response) as request, \
+             patch.object(plan, "_save") as save:
             result = plan._session()
         self.assertEqual(result["access_token"], "ACCESS_NEW")
         request.assert_called_once()
