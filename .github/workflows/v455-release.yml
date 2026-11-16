@@ -32,6 +32,17 @@ jobs:
             $errors | ForEach-Object { Write-Error $_.Message }
             exit 1
           }
+          # Execute the exact PowerShell Git-blob helper against the verified v4.54 BUILD.txt fixture.
+          $installer = Get-Content -LiteralPath (Join-Path $PWD "repair455/Install-Madar455-SIWC-Refresh.ps1") -Raw
+          $helper = [regex]::Match($installer, '(?ms)^function Git-BlobHash\(\[string\]\$path\) \{.*?^\}')
+          if (-not $helper.Success) { throw "Git-BlobHash helper could not be isolated for its runtime test." }
+          . ([scriptblock]::Create($helper.Value))
+          $fixture = Join-Path $env:RUNNER_TEMP "madar-v454-build-hash.txt"
+          [IO.File]::WriteAllText($fixture, "v4.54 14050824 SU GPT-6 PORTABLE_STORAGE_ROOT_D`n", [Text.UTF8Encoding]::new($false))
+          try {
+            $actual = Git-BlobHash $fixture
+            if ($actual -ne "8a2ee471df63da20c6bc1e3b43fe72dee7ead9dc") { throw "Git blob SHA-1 runtime check failed: $actual" }
+          } finally { Remove-Item -LiteralPath $fixture -Force -ErrorAction SilentlyContinue }
       - name: Install MinGW-w64 cross compiler
         run: |
           sudo apt-get update
