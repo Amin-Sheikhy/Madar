@@ -21,7 +21,7 @@ jobs:
           python-version: "3.13"
 
       - name: Compile Python source
-        run: python -m compileall -q app tests repair453 repair454
+        run: python -m compileall -q app tests repair453 repair454 repair455
 
       - name: Run isolated unit tests
         run: python -m unittest discover -s tests -v
@@ -42,8 +42,10 @@ jobs:
         run: |
           $files = @(
             "oneclick/bootstrap.ps1",
+            "oneclick/bootstrap455.ps1",
             "repair453/Install-Madar453-Books-Delete.ps1",
-            "repair454/Install-Madar454-Storage-Root.ps1"
+            "repair454/Install-Madar454-Storage-Root.ps1",
+            "repair455/Install-Madar455-SIWC-Refresh.ps1"
           )
           foreach ($file in $files) {
             $tokens = $null
@@ -56,19 +58,33 @@ jobs:
             }
           }
 
-
       - name: Install MinGW-w64 cross compiler
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
 
       - name: Build v4.54 Windows x64 one-click installer
+        if: github.ref != 'refs/heads/codex/v4.55-siwc-refresh-diagnostics'
         run: python oneclick/build_oneclick.py
 
+      - name: Build v4.55 Windows x64 one-click installer
+        if: github.ref == 'refs/heads/codex/v4.55-siwc-refresh-diagnostics'
+        run: python oneclick/build_v455_oneclick.py
+
       - name: Upload v4.54 one-click installer artifact
+        if: github.ref != 'refs/heads/codex/v4.55-siwc-refresh-diagnostics'
         uses: actions/upload-artifact@v4
         with:
           name: Madar454-OneClick-D
           path: dist/Madar454-OneClick-D.exe
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload v4.55 one-click installer artifact
+        if: github.ref == 'refs/heads/codex/v4.55-siwc-refresh-diagnostics'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Madar455-OneClick-D
+          path: dist/Madar455-OneClick-D.exe
           if-no-files-found: error
           retention-days: 30
