@@ -29,8 +29,8 @@ This repository is prepared for public technical review, including an applicatio
 - “My Books” open/delete controls. Delete removes only the app-managed copy in the Madar Books directory; the selected source file outside that directory is preserved.
 - Loopback API endpoint for book deletion with origin checks and explicit confirmation.
 - Portable installed-root detection: the parent of `App` is the runtime root; `Data`, `Books`, `Logs`, `Backups`, and `Reports` stay beneath it.
-- A one-click updater that accepts only exact known v4.49–v4.52 file baselines, backs up four program files, verifies the active `Data` and `Books` paths, and rolls back program files if post-update health checks fail.
-- The update does not move, delete, or rewrite learner records or managed books. v4.48, v4.53, and unknown/modified baselines are rejected safely rather than guessed.
+- A one-click updater that accepts only exact known v4.49–v4.52 file baselines, backs up five program files, including the required `local_pdf.py` module, verifies the active `Data` and `Books` paths, and rolls back program files if post-update health checks fail.
+- The update does not move, delete, or rewrite learner records or managed books. The four core files retain exact baseline-hash checks; `local_pdf.py` has a guarded compatibility preflight and is included in backup/rollback. v4.48, v4.53, and unknown/modified baselines are rejected safely rather than guessed.
 
 Some AI learning workflows and target-Windows runtime paths remain unverified. See [v4.54 test status](docs/TEST_STATUS_v4.54.md).
 
