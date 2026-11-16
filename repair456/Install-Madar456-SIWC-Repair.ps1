@@ -121,7 +121,7 @@ try {
   $target=Join-Path $app $name
   if (-not (Test-Path -LiteralPath $target -PathType Leaf)) { throw "Required program file is missing: $name" }
   Assert-PlainPath $target
-  # v4.55 baseline constants are Git blob SHA-1 IDs; v4.56 payload IDs are raw-file SHA-256.
+  # The installed v4.55 file identities are Git blob SHA-1 IDs; v4.56 payload checks use raw-file SHA-256.
   $digest=if ($sourceVersion -eq 'v4.56') { Hash-File $target } else { Git-BlobHash $target }
   $expectedHash=if ($sourceVersion -eq 'v4.56') { $new[$name] } else { $old[$name] }
   if ($digest -ne $expectedHash) { throw "Program file $name does not match the verified $sourceVersion baseline; no file was replaced." }
