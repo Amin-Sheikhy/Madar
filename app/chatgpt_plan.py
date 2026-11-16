@@ -338,7 +338,21 @@ def _session():
             return d
         form=urllib.parse.urlencode({'grant_type':'refresh_token','client_id':d['client_id'],
             'refresh_token':d['refresh_token'],'resource':RESOURCE}).encode('ascii')
-        response=_request_json(TOKEN,method='POST',data=form,headers={'Content-Type':'application/x-www-form-urlencoded'})
+        try:
+            response=_request_json(TOKEN,method='POST',data=form,headers={'Content-Type':'application/x-www-form-urlencoded'})
+        except RuntimeError as exc:
+            message=str(exc)
+            if 'TOKEN_REFRESH: HTTP 400' in message and re.search(r'\\berror=invalid_grant\\b',message):
+                # OpenAI classifies invalid_grant as an unusable refresh credential.
+                # Remove only the rejected token set; retain the issued client ID and
+                # account hints so the next browser sign-in reuses the same SIWC client.
+                retained={key:d[key] for key in ('client_id','subject','email','id_token','ext_agent_host_id','model') if d.get(key)}
+                retained['pending_client_id']=d['client_id']
+                _save(retained)
+                request_id=re.search(r'requestId=([A-Za-z0-9_.:-]+)',message)
+                suffix=(' requestId='+request_id.group(1)) if request_id else ''
+                raise RuntimeError('CHATGPT_REAUTH_REQUIRED: توکن نوسازی قبلی از سوی OpenAI رد شد؛ برای ادامه یک‌بار با همان حساب ChatGPT دوباره وارد شو.'+suffix) from None
+            raise
         if not isinstance(response,dict) or not response.get('access_token') or not response.get('refresh_token'):
             raise RuntimeError('نوسازی مجوز ChatGPT موفق نبود؛ دوباره وارد شو.')
         d.update({'access_token':response['access_token'],'refresh_token':response['refresh_token'],
