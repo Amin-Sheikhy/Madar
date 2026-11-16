@@ -6,7 +6,7 @@
 **نسخهٔ منتشرشده در `main`:** `v4.53 14050824 SU GPT-6 BOOKS_DELETE_DIRECT_DOWNLOAD`  
 **آدرس مخزن:** [https://github.com/Amin-Sheikhy/Madar](https://github.com/Amin-Sheikhy/Madar)  
 **مجوز:** [MIT License](LICENSE) (`Copyright (c) 2026 Amin Sheikhy`)  
-**نصاب آزمایشی v4.54:** [فایل اجرایی در GitHub Actions](https://github.com/Amin-Sheikhy/Madar/actions/runs/43760254035) (artifact آزمایشی است، نه Release رسمی)
+**نصاب آزمایشی v4.54:** [فایل اجرایی در GitHub Actions](https://github.com/Amin-Sheikhy/Madar/actions/runs/43789060094) (artifact آزمایشی است، نه Release رسمی)
 
 مَدار یک محیط یادگیری و پژوهش فارسی‌محور و محلی برای ویندوز است که داشبورد یادگیری، ساختار دوره‌ها و شواهد تسلط، سازمان‌دهی دانش علمی، نقشه مهارت، کتابخانهٔ PDF محلی و قابلیت‌های اختیاری AI را در یک برنامه گرد می‌آورد.
 
