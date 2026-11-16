@@ -23,6 +23,16 @@ $localHealth='NOT_TESTED'; $storagePaths='NOT_TESTED'; $chatgptModels='NOT_TESTE
 $chatgptModelCount=0; $chatgptSafeError=''; $chatgptRequestId=''; $failureDetail=''
 
 function Hash-File([string]$path) { return (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() }
+function Git-BlobHash([string]$path) {
+ $bytes=[IO.File]::ReadAllBytes($path)
+ $header=[Text.Encoding]::ASCII.GetBytes(('blob ' + $bytes.Length + [char]0))
+ $blob=New-Object byte[] ($header.Length + $bytes.Length)
+ [Array]::Copy($header,0,$blob,0,$header.Length)
+ [Array]::Copy($bytes,0,$blob,$header.Length,$bytes.Length)
+ $sha=[Security.Cryptography.SHA1]::Create()
+ try { return ([BitConverter]::ToString($sha.ComputeHash($blob))).Replace('-','').ToLowerInvariant() }
+ finally { $sha.Dispose() }
+}
 function Assert-PlainPath([string]$path) {
  if (Test-Path -LiteralPath $path) {
   $item=Get-Item -LiteralPath $path -Force
@@ -108,7 +118,8 @@ try {
   $target=Join-Path $app $name
   if (-not (Test-Path -LiteralPath $target -PathType Leaf)) { throw "Required program file is missing: $name" }
   Assert-PlainPath $target
-  $digest=Hash-File $target
+  # v4.54 baseline constants are Git blob SHA-1 IDs; v4.55 payload IDs are raw-file SHA-256.
+  $digest=if ($sourceVersion -eq 'v4.55') { Hash-File $target } else { Git-BlobHash $target }
   $expectedHash=if ($sourceVersion -eq 'v4.55') { $new[$name] } else { $old[$name] }
   if ($digest -ne $expectedHash) { throw "Program file $name does not match the verified $sourceVersion baseline; no file was replaced." }
   $payload=Join-Path $PSScriptRoot ('patch\' + $name)
