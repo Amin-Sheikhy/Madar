@@ -28,6 +28,7 @@ class MadarV456BuildIdentityTests(unittest.TestCase):
         self.assertIn("CHATGPT_REAUTH_REQUIRED", ui)
         self.assertIn("account=await call('status')", ui)
         self.assertIn("account.error='توکن قبلی از سوی OpenAI رد شده است", ui)
+        self.assertIn("madar:chatgpt-status", ui)
 
     def test_service_worker_cache_is_bumped_for_v456(self):
         sw = self.read("sw.js")
