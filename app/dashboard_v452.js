@@ -154,6 +154,16 @@
   const more=$('.madar-more>summary');if(more)more.innerHTML='⚙ نقشهٔ علمی، درس‌ها و تنظیمات <span class="madar-chevron">⌄</span>';
   // The full build identity is supplied by /api/health; never hardcode an old UI version.
  }
+ window.addEventListener('madar:chatgpt-status',event=>{
+  const s=event.detail||{},status=$('#m452-ai-status'),light=$('#m452-ai-light');
+  if(!status)return;
+  light?.classList.remove('is-on','is-warm');
+  if(s.permission){status.textContent='مجوز حساب گزارش‌شده · اتصال در دسترس';light?.classList.add('is-warm')}
+  else if(s.error&&String(s.error).includes('توکن قبلی')){status.textContent='نیازمند ورود دوباره به ChatGPT'}
+  else if(s.error){status.textContent='بررسی اتصال ChatGPT ناموفق بود'}
+  else if(s.connected){status.textContent='ورود ثبت شده؛ مجوز استفاده تأیید نشده'}
+  else{status.textContent='اتصال فعال تأیید نشده'}
+ });
  simplifySidebar();
  const previous=render;
  render=function(){previous();mount()};
