@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-build the Windows x64 Madar v4.55 SIWC repair one-click installer."""
+"""Cross-build the Windows x64 Madar v4.56 SIWC reauthorization and build-label repair one-click installer."""
 from __future__ import annotations
 import base64, hashlib, io, shutil, struct, subprocess, zipfile
 from pathlib import Path
@@ -23,7 +23,7 @@ def make_payload() -> bytes:
     for name in names:
         patch_file=patch_dir/name
         source_file=PROJECT/"app"/name
-        if not patch_file.is_file() or not source_file.is_file(): raise RuntimeError("Missing v4.55 payload file: "+name)
+        if not patch_file.is_file() or not source_file.is_file(): raise RuntimeError("Missing v4.56 payload file: "+name)
         data=patch_file.read_bytes()
         if data!=source_file.read_bytes(): raise RuntimeError("Payload differs from app source: "+name)
         token=tokens[name]
@@ -43,7 +43,7 @@ def make_payload() -> bytes:
     return package
 
 def build() -> None:
-    if not (PROJECT/"app"/"BUILD.txt").read_text("utf-8").startswith("v4.55 "): raise RuntimeError("Not building from Madar v4.55")
+    if not (PROJECT/"app"/"BUILD.txt").read_text("utf-8").startswith("v4.56 "): raise RuntimeError("Not building from Madar v4.56")
     compiler=shutil.which("x86_64-w64-mingw32-gcc")
     if not compiler: raise RuntimeError("MinGW-w64 cross compiler is missing")
     objdump=shutil.which("x86_64-w64-mingw32-objdump") or shutil.which("objdump")
