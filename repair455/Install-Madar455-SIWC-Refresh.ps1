@@ -20,7 +20,7 @@ $old = @{
 $script:pythonExe=$null; $script:backup=$null; $script:changed=$false; $script:hadServer=$false
 $sourceVersion=$null; $result='FAIL'; $failureCategory='PRECHECK'
 $localHealth='NOT_TESTED'; $storagePaths='NOT_TESTED'; $chatgptModels='NOT_TESTED'
-$chatgptModelCount=0; $chatgptSafeError=''; $chatgptRequestId=''
+$chatgptModelCount=0; $chatgptSafeError=''; $chatgptRequestId=''; $failureDetail=''
 
 function Hash-File([string]$path) { return (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant() }
 function Assert-PlainPath([string]$path) {
@@ -152,6 +152,8 @@ try {
  if ($chatgptModels -ne 'PASS') { Write-Host ('Safe diagnostic: ' + $chatgptSafeError) -ForegroundColor Yellow }
  Start-Process 'http://127.0.0.1:8765/?v=455'
 } catch {
+ $failureDetail=[string]$_.Exception.Message
+ if ($failureDetail.Length -gt 500) { $failureDetail=$failureDetail.Substring(0,500) }
  Write-Host ('Update stopped: ' + $_.Exception.Message) -ForegroundColor Red
  if ($script:changed -and $script:backup) {
   try {
@@ -167,7 +169,7 @@ try {
   New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
   [pscustomobject]@{
    schema='madar.siwc.refresh.repair.v1'; target=$targetVersion; sourceVersion=$sourceVersion
-   result=$result; failureCategory=$failureCategory; localHealth=$localHealth; storagePaths=$storagePaths
+   result=$result; failureCategory=$failureCategory; failureDetail=$failureDetail; localHealth=$localHealth; storagePaths=$storagePaths
    chatgptModels=$chatgptModels; chatgptModelCount=$chatgptModelCount
    chatgptSafeError=$chatgptSafeError; chatgptRequestId=$chatgptRequestId
    programFiles=$files; programBackupCreated=[bool]$script:backup
