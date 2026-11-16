@@ -1,5 +1,5 @@
-# Madar v4.56 -> v4.56 SIWC reauthorization and dashboard build-identity repair.
-# Replaces only three verified program files; Data and Books are read-only here.
+# Madar v4.55 -> v4.56 SIWC reauthorization and dashboard build-identity repair.
+# Replaces only six verified program files; Data and Books are read-only here.
 [CmdletBinding()]
 param()
 $ErrorActionPreference = 'Stop'
@@ -99,7 +99,7 @@ function Test-ChatGPTModelCatalog {
 }
 
 try {
- Write-Host 'MADAR v4.56 | ChatGPT plan refresh repair' -ForegroundColor Cyan
+ Write-Host 'MADAR v4.56 | SIWC reauthorization and dashboard build fix' -ForegroundColor Cyan
  if (-not (Test-Path -LiteralPath $launcher -PathType Leaf)) { throw 'Madar was not found at D:\AWHQ CENTER\MADAR\App.' }
  foreach ($folder in @('Data','Books','Backups','Reports')) {
   $path=Join-Path $base $folder
