@@ -78,7 +78,7 @@ jobs:
         run: python oneclick/build_v456_oneclick.py
 
       - name: Upload v4.54 one-click installer artifact
-        if: github.ref != 'refs/heads/codex/v4.55-siwc-refresh-diagnostics'
+        if: github.ref != 'refs/heads/codex/v4.55-siwc-refresh-diagnostics' && github.ref != 'refs/heads/codex/v4.56-siwc-reauth-buildlabel'
         uses: actions/upload-artifact@v4
         with:
           name: Madar454-OneClick-D
