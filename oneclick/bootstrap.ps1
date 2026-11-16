@@ -32,7 +32,8 @@ try {
   'patch/BUILD.txt',
   'patch/madar_launcher.py',
   'patch/vault_server.py',
-  'patch/madar_ai_server.py'
+  'patch/madar_ai_server.py',
+  'patch/local_pdf.py'
  )
  if ($archive.Entries.Count -ne $expectedEntries.Count) { throw 'The embedded package has an unexpected file count.' }
  $seen = @{}
