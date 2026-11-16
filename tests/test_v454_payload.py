@@ -34,7 +34,7 @@ class V454PayloadTests(unittest.TestCase):
         for version in ("v4.49", "v4.50", "v4.51", "v4.52"):
             with self.subTest(version=version):
                 self.assertIn("'" + version + "'=@{", script)
-        for token in ("__HASH_BUILD__", "__HASH_LAUNCHER__", "__HASH_VAULT__", "__HASH_SERVER__"):
+        for token in ("__HASH_BUILD__", "__HASH_LAUNCHER__", "__HASH_VAULT__", "__HASH_SERVER__", "__HASH_LOCAL_PDF__"):
             with self.subTest(token=token):
                 self.assertIn(token, script)
         self.assertIn("4938d67ab359a3e587e0db7dda0e03afd7a045bf90ffbadfa0d914b05236b7f0", script)
