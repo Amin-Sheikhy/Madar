@@ -38,6 +38,8 @@ class V454PayloadTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, script)
         self.assertIn("4938d67ab359a3e587e0db7dda0e03afd7a045bf90ffbadfa0d914b05236b7f0", script)
+        self.assertIn("cd4c310e775cd51a5ddc17b3a57aa2dc20494e2b1f773d73b580afbc13680596", script)
+        self.assertIn("$digest -notin $acceptedHashes", script)
         self.assertIn("Test-LegacyPdfModule", script)
 
     def test_local_pdf_delete_is_safe_and_preserves_external_original(self):
