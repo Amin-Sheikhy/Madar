@@ -2,27 +2,36 @@
 
 Build identity: `v4.54 14050824 SU GPT-6 PORTABLE_STORAGE_ROOT_D`
 
-The original v4.54 candidate is on `codex/v4.54-storage-root`. The PDF-module updater repair is isolated on `codex/v4.54-fix-pdf-module-updater`; neither branch is merged into `main`, and neither is a published GitHub Release. The original pre-fix artifact is superseded for v4.52 upgrades.
+The original v4.54 candidate is on `codex/v4.54-storage-root`. The PDF-module updater repair is isolated on `codex/v4.54-fix-pdf-module-updater`; neither branch is merged into `main`, and neither is a published GitHub Release. The repaired branch passed GitHub Actions run [#75](https://github.com/Amin-Sheikhy/Madar/actions/runs/43789060094). The original pre-fix artifact is superseded for v4.52 upgrades.
 
 | Check | Status | Notes |
 |---|---|---|
 | Build identity and server health version agree | PASS | `BUILD.txt`, `/api/health`, and server startup banner report v4.54. |
-| Overlay files match the application source byte-for-byte | PENDING | The repaired builder must compare all five embedded files, including `local_pdf.py`. |
-| Exact baseline manifest for v4.49–v4.52 | PENDING | Four core files retain exact SHA-256 checks; `local_pdf.py` adds known hashes for v4.51/v4.52 and a guarded structural preflight for v4.49/v4.50. |
+| Overlay files match the application source byte-for-byte | PASS | Builder compares all five embedded files, including `local_pdf.py`, byte-for-byte with `app/`. |
+| Exact baseline manifest for v4.49–v4.52 | PASS | Four core files retain exact SHA-256 checks; `local_pdf.py` adds known hashes for v4.51/v4.52 and a guarded structural preflight for v4.49/v4.50. |
 | v4.54 storage-path unit tests | PASS | Installed layout, source-checkout fallback, and explicit data-folder override. |
-| PDF module migration preflight | PENDING | v4.51/v4.52 legacy hash is checked; v4.49/v4.50 require expected PDF helper functions or an absent module, and unknown `delete_book` implementations are rejected. |
-| Payload integrity unit tests | PENDING | Version label, five overlay files, managed-book deletion safety, and absence of a maintainer-specific path in app code. |
-| Python compilation | PENDING | `app`, `tests`, `repair453`, and `repair454`, including the added PDF payload. |
+| PDF module migration preflight | PASS (static) | The guarded source checks known v4.51/v4.52 hashes; v4.49/v4.50 require expected PDF helper functions or an absent module, and unknown `delete_book` implementations are rejected. |
+| Payload integrity unit tests | PASS | Version label, five overlay files, managed-book deletion safety, and absence of a maintainer-specific path in app code. |
+| Python compilation | PASS | `app`, `tests`, `repair453`, and `repair454`, including the added PDF payload. |
 | JavaScript syntax | PASS | Node.js 22 syntax validation completed. |
-| PowerShell syntax | PENDING | v4.53 updater, repaired v4.54 updater, and v4.54 bootstrap must parse successfully. |
-| Windows x64 PE32+ installer build | PENDING | Rebuild the repaired payload and verify the PE32+ x64 executable still imports only `KERNEL32.dll`. |
-| Embedded ZIP integrity | PENDING | Six expected entries (installer plus five program files), marker, embedded SHA-256, and payload contents. |
-| GitHub Actions artifact upload | PENDING | A new `Madar454-OneClick-D` artifact must be produced from the repair branch. |
+| PowerShell syntax | PASS | v4.53 updater, repaired v4.54 updater, and v4.54 bootstrap parsed successfully. |
+| Windows x64 PE32+ installer build | PASS | 51,689-byte PE32+ x64 GUI executable; CI verified the expected `KERNEL32.dll`-only imports. |
+| Embedded ZIP integrity | PASS | Six expected entries (installer plus five program files), marker, embedded SHA-256, and payload contents verified by the builder and independently rechecked. |
+| GitHub Actions artifact upload | PASS | Artifact `Madar454-OneClick-D` (ID `14191687195`) uploaded; expires 2026-12-16. |
+| PDF module migration execution on target Windows | NOT_TESTED | The migration guard has not been executed against a real Windows v4.49–v4.52 installation. |
 | PowerShell update execution on target Windows | NOT_TESTED | Requires a real Windows installation and supported baseline. |
 | v4.49–v4.52 upgrade acceptance on the user's PC | NOT_TESTED | Must be exercised on the actual installation before installation can be marked PASS. |
 | Full browser UI regression | NOT_TESTED | Not covered by the source workflow. |
 | End-to-end AI course coaching with a real PDF | NOT_TESTED | Not part of the storage-root update acceptance. |
 | Independent security audit / penetration test | NOT_TESTED | No such audit is claimed. |
+
+## Repaired installer identity — CI PASS
+
+- File: `Madar454-OneClick-D.exe`
+- Size: 51,689 bytes
+- SHA-256: `638896b80d24e4400f73fec74c87ecf4e06f02dc7aa917a41e99cd18adbe6b87`
+- GitHub Actions run: [#75](https://github.com/Amin-Sheikhy/Madar/actions/runs/43789060094)
+- GitHub Actions artifact: `Madar454-OneClick-D` (artifact ID `14191687195`; expires 2026-12-16)
 
 ## Original pre-fix installer identity (superseded)
 
@@ -30,8 +39,6 @@ The original v4.54 candidate is on `codex/v4.54-storage-root`. The PDF-module up
 - Size: 48,746 bytes
 - SHA-256: `519c14cd02470034da07af50e15d1785ec4bea49a5ad0c0a2d5a64129f48165d`
 - GitHub Actions artifact: `Madar454-OneClick-D` (artifact ID `14179863191`)
-
-The repaired artifact identity will be recorded here only after the repair-branch workflow completes successfully.
 
 ## Update safety boundary
 
