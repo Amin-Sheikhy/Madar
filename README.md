@@ -68,7 +68,7 @@ Madar is not intended to expose its local service to a LAN or public network. Re
 
 ## Build/release caveat
 
-The v4.54 one-click update source accepts only exact v4.49–v4.52 baselines. The Windows PowerShell execution and end-to-end installation are **not tested on a target Windows machine**. CI can build and structurally verify the unsigned PE32+ installer, but this is not a Windows installation test, security audit, or certification.
+The v4.54 one-click update source accepts exact v4.49–v4.52 core-file baselines plus a guarded `local_pdf.py` compatibility check. The Windows PowerShell execution and end-to-end installation are **not tested on a target Windows machine**. CI can build and structurally verify the unsigned PE32+ installer, but this is not a Windows installation test, security audit, or certification.
 
 ## Repository maintenance
 
