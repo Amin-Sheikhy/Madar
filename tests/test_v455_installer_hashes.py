@@ -10,8 +10,8 @@ INSTALLER = (ROOT / "repair455" / "Install-Madar455-SIWC-Refresh.ps1").read_text
 class TestV455InstallerBaselineHashing(unittest.TestCase):
     def test_v454_build_hash_is_git_blob_sha1(self):
         # Exact v4.54 BUILD.txt content from the verified storage-root baseline.
-        data = b"v4.54 14050824 SU GPT-6 PORTABLE_STORAGE_ROOT_D\\n"
-        digest = hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\\0" + data).hexdigest()
+        data = b"v4.54 14050824 SU GPT-6 PORTABLE_STORAGE_ROOT_D\n"
+        digest = hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\0" + data).hexdigest()
         self.assertEqual(digest, "8a2ee471df63da20c6bc1e3b43fe72dee7ead9dc")
 
     def test_installer_uses_git_blob_sha1_only_for_v454(self):
