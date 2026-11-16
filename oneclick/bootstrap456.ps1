@@ -1,9 +1,9 @@
-# v4.55 one-click bootstrap. The EXE carries a hash-verified payload.
+# v4.56 one-click bootstrap. The EXE carries a hash-verified payload.
 $ErrorActionPreference = 'Stop'
 $work = $null
 $outcome = 1
 try {
- Write-Host 'MADAR v4.55 - One Click SIWC Repair' -ForegroundColor Cyan
+ Write-Host 'MADAR v4.56 - One Click SIWC Repair' -ForegroundColor Cyan
  $exe = $env:MADAR456_INSTALLER_FILE
  if (-not $exe -or -not [IO.File]::Exists($exe)) { throw 'The one-click installer file could not be identified.' }
  $bytes = [IO.File]::ReadAllBytes($exe)
@@ -43,11 +43,11 @@ try {
    try { $inputStream.CopyTo($outputStream) } finally { $outputStream.Dispose(); $inputStream.Dispose() }
   }
  } finally { $archive.Dispose(); $stream.Dispose() }
- $setup=Join-Path $work 'Install-Madar456-SIWC-Refresh.ps1'
- if (-not [IO.File]::Exists($setup)) { throw 'The v4.55 update script is missing.' }
+ $setup=Join-Path $work 'Install-Madar456-SIWC-Repair.ps1'
+ if (-not [IO.File]::Exists($setup)) { throw 'The v4.56 update script is missing.' }
  & $setup
- if ($LASTEXITCODE -ne 0) { throw 'The v4.55 update did not pass local verification. Read the local Reports folder.' }
- Write-Host 'Madar v4.55 passed its local checks.' -ForegroundColor Green
+ if ($LASTEXITCODE -ne 0) { throw 'The v4.56 update did not pass local verification. Read the local Reports folder.' }
+ Write-Host 'Madar v4.56 passed its local checks.' -ForegroundColor Green
  $outcome=0
 } catch {
  Write-Host ('Update stopped: '+$_.Exception.Message) -ForegroundColor Red
