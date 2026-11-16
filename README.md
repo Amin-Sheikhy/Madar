@@ -6,7 +6,7 @@
 **Published `main` baseline:** `v4.53 14050824 SU GPT-6 BOOKS_DELETE_DIRECT_DOWNLOAD`  
 **Repository:** [https://github.com/Amin-Sheikhy/Madar](https://github.com/Amin-Sheikhy/Madar)  
 **License:** [MIT License](LICENSE) (`Copyright (c) 2026 Amin Sheikhy`)  
-**v4.54 candidate installer:** [GitHub Actions artifact](https://github.com/Amin-Sheikhy/Madar/actions/runs/43789060094) (workflow artifact, not a formal Release)
+**v4.54 candidate installer:** [GitHub Actions artifact](https://github.com/Amin-Sheikhy/Madar/actions/runs/43790673415) (workflow artifact, not a formal Release)
 
 Madar (مَدار) is a Persian-first, local-first learning and research workspace for Windows. It brings a learning dashboard, course progression and mastery records, scientific knowledge organization, skill mapping, local PDF library workflows, and optional AI-assisted learning into one application.
 
