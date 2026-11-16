@@ -20,13 +20,18 @@ class V454PayloadTests(unittest.TestCase):
     def test_build_identity_is_consistent(self):
         self.assertEqual((PATCH / "BUILD.txt").read_text("utf-8").strip(), BUILD_ID)
         current_build = (APP / "BUILD.txt").read_text("utf-8").strip()
-        self.assertTrue(current_build.startswith("v4.55 "))
+        current_version = current_build.split()[0]
+        self.assertIn(current_version, ("v4.55", "v4.56"))
         old_server = (PATCH / "madar_ai_server.py").read_text("utf-8")
         current_server = (APP / "madar_ai_server.py").read_text("utf-8")
         self.assertIn("'version':'v4.54'", old_server)
         self.assertIn("MADAR v4.54 |", old_server)
-        self.assertIn("'version':'v4.55'", current_server)
-        self.assertIn("MADAR v4.55 |", current_server)
+        if current_version == "v4.55":
+            self.assertIn("'version':'v4.55'", current_server)
+            self.assertIn("MADAR v4.55 |", current_server)
+        else:
+            self.assertIn("'version':build_info()[0]", current_server)
+            self.assertIn("print('MADAR ' + build_info()[0]", current_server)
 
     def test_unchanged_v454_overlay_files_match_the_application_source(self):
         for name in ("madar_launcher.py", "vault_server.py", "local_pdf.py"):
