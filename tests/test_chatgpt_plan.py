@@ -73,6 +73,38 @@ class ChatGPTPlanRefreshTests(unittest.TestCase):
         self.assertEqual(result["access_token"], "ACCESS_NEW")
         request.assert_called_once()
 
+    def test_invalid_grant_clears_only_rejected_tokens_and_retains_reauth_identity(self):
+        saved = profile(earliest_refresh_at=4500, ext_agent_host_id="urn:uuid:test-host")
+        failure = RuntimeError("TOKEN_REFRESH: HTTP 400; error=invalid_grant; requestId=req_reauth_456")
+        with patch.object(plan, "_load", return_value=saved), \
+             patch.object(plan.time, "time", return_value=4700), \
+             patch.object(plan, "_request_json", side_effect=failure), \
+             patch.object(plan, "_save") as save:
+            with self.assertRaisesRegex(RuntimeError, "CHATGPT_REAUTH_REQUIRED") as caught:
+                plan._session()
+        self.assertIn("req_reauth_456", str(caught.exception))
+        retained = save.call_args.args[0]
+        self.assertEqual(retained["client_id"], "oaiapp_test1234")
+        self.assertEqual(retained["pending_client_id"], "oaiapp_test1234")
+        self.assertEqual(retained["subject"], "subject-test")
+        self.assertEqual(retained["email"], "test@example.invalid")
+        self.assertEqual(retained["id_token"], "ID_SECRET")
+        self.assertEqual(retained["ext_agent_host_id"], "urn:uuid:test-host")
+        self.assertEqual(retained["model"], "gpt-6-astra")
+        for secret_key in ("access_token", "refresh_token", "scope", "saved_at", "expires_in"):
+            self.assertNotIn(secret_key, retained)
+
+    def test_transient_refresh_error_does_not_clear_saved_credentials(self):
+        saved = profile(earliest_refresh_at=4500)
+        failure = RuntimeError("TOKEN_REFRESH: HTTP 503; error=temporarily_unavailable")
+        with patch.object(plan, "_load", return_value=saved), \
+             patch.object(plan.time, "time", return_value=4700), \
+             patch.object(plan, "_request_json", side_effect=failure), \
+             patch.object(plan, "_save") as save:
+            with self.assertRaisesRegex(RuntimeError, "HTTP 503"):
+                plan._session()
+        save.assert_not_called()
+
     def test_status_expired_means_access_token_is_actually_expired(self):
         saved = profile(earliest_refresh_at=4700)
         with patch.object(plan, "_load", return_value=saved), \
