@@ -60,8 +60,11 @@ $oldByVersion = @{
 }
 
 $legacyPdfHashes = @{
- 'v4.51'='4938d67ab359a3e587e0db7dda0e03afd7a045bf90ffbadfa0d914b05236b7f0'
- 'v4.52'='4938d67ab359a3e587e0db7dda0e03afd7a045bf90ffbadfa0d914b05236b7f0'
+ 'v4.51'=@('4938d67ab359a3e587e0db7dda0e03afd7a045bf90ffbadfa0d914b05236b7f0')
+ 'v4.52'=@(
+  '4938d67ab359a3e587e0db7dda0e03afd7a045bf90ffbadfa0d914b05236b7f0',
+  'cd4c310e775cd51a5ddc17b3a57aa2dc20494e2b1f773d73b580afbc13680596'
+ )
 }
 
 function Get-RootFromLauncher([string]$path) {
@@ -150,7 +153,8 @@ function Test-LegacyPdfModule {
  $digest = Hash-File $path
  if ($digest -eq $new['local_pdf.py']) { return 'ALREADY_TARGET' }
  if ($legacyPdfHashes.ContainsKey($script:oldVersion)) {
-  if ($digest -ne $legacyPdfHashes[$script:oldVersion]) {
+  $acceptedHashes = @($legacyPdfHashes[$script:oldVersion])
+  if ($digest -notin $acceptedHashes) {
    throw "The installed local_pdf.py differs from the known $($script:oldVersion) baseline. No replacement was made."
   }
   return 'REPLACE'
