@@ -44,8 +44,23 @@ function refreshPanel(){
  }
 }
 async function refresh(quiet=false){
- try{account=await call('status');if(account.permission){try{const r=await call('models');models=r.models||[]}catch(err){if(!quiet)throw err}}}
- catch(err){if(!quiet)throw err;account={connected:false,permission:false,error:err.message}}
+ try{
+  account=await call('status');models=[];
+  if(account.permission){
+   try{const r=await call('models');models=r.models||[]}
+   catch(err){
+    const message=String(err.message||err);
+    if(message.includes('CHATGPT_REAUTH_REQUIRED')){
+     account=await call('status');
+     const id=message.match(/requestId=([A-Za-z0-9_.:-]+)/)?.[1];
+     account.error='توکن قبلی از سوی OpenAI رد شده است؛ برای ادامه با همان حساب دوباره وارد شو.'+(id?' شناسهٔ پیگیری: '+id:'');
+    }else{
+     account.error=message;
+     if(!quiet)throw err;
+    }
+   }
+  }
+ }catch(err){if(!quiet)throw err;account={connected:false,permission:false,error:err.message};models=[]}
  refreshPanel();return account;
 }
 function toast(s){if(typeof showToast==='function')showToast(s);else alert(s)}
