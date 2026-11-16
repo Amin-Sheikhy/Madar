@@ -2,11 +2,16 @@
 from hashlib import sha256
 from pathlib import Path
 import re
+import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCH = ROOT / "repair454" / "patch"
 APP = ROOT / "app"
+sys.path.insert(0, str(APP))
+import local_pdf
 INSTALLER = ROOT / "repair454" / "Install-Madar454-Storage-Root.ps1"
 BUILD_ID = "v4.54 14050824 SU GPT-6 PORTABLE_STORAGE_ROOT_D"
 
@@ -20,7 +25,7 @@ class V454PayloadTests(unittest.TestCase):
         self.assertIn("MADAR v4.54 |", server)
 
     def test_overlay_files_match_the_application_source(self):
-        for name in ("BUILD.txt", "madar_launcher.py", "vault_server.py", "madar_ai_server.py"):
+        for name in ("BUILD.txt", "madar_launcher.py", "vault_server.py", "madar_ai_server.py", "local_pdf.py"):
             with self.subTest(name=name):
                 self.assertEqual((PATCH / name).read_bytes(), (APP / name).read_bytes())
 
@@ -32,6 +37,27 @@ class V454PayloadTests(unittest.TestCase):
         for token in ("__HASH_BUILD__", "__HASH_LAUNCHER__", "__HASH_VAULT__", "__HASH_SERVER__"):
             with self.subTest(token=token):
                 self.assertIn(token, script)
+        self.assertIn("4938d67ab359a3e587e0db7dda0e03afd7a045bf90ffbadfa0d914b05236b7f0", script)
+        self.assertIn("Test-LegacyPdfModule", script)
+
+    def test_local_pdf_delete_is_safe_and_preserves_external_original(self):
+        self.assertIn("def delete_book(", (APP / "local_pdf.py").read_text("utf-8"))
+        with tempfile.TemporaryDirectory() as tmp:
+            books = Path(tmp) / "Books"
+            books.mkdir()
+            original = Path(tmp) / "outside.pdf"
+            managed = books / "managed.pdf"
+            pdf = b"%PDF-1.4\\n"
+            original.write_bytes(pdf)
+            managed.write_bytes(pdf)
+            with patch.object(local_pdf, "BOOKS", books):
+                with self.assertRaises(PermissionError):
+                    local_pdf.delete_book("managed.pdf", False)
+                self.assertTrue(managed.exists())
+                result = local_pdf.delete_book("managed.pdf", True)
+            self.assertTrue(result["deleted"])
+            self.assertFalse(managed.exists())
+            self.assertTrue(original.exists())
 
     def test_public_path_is_not_hardcoded_in_application_source(self):
         for name in ("madar_launcher.py", "vault_server.py"):
@@ -39,7 +65,7 @@ class V454PayloadTests(unittest.TestCase):
             self.assertNotIn(r"D:\AWHQ CENTER\MADAR", source)
 
     def test_target_hashes_are_sha256_sized(self):
-        for name in ("BUILD.txt", "madar_launcher.py", "vault_server.py", "madar_ai_server.py"):
+        for name in ("BUILD.txt", "madar_launcher.py", "vault_server.py", "madar_ai_server.py", "local_pdf.py"):
             digest = sha256((PATCH / name).read_bytes()).hexdigest()
             self.assertRegex(digest, r"^[0-9a-f]{64}$")
 
