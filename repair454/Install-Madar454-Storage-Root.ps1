@@ -11,6 +11,7 @@ $script:base = $null
 $script:app = $null
 $script:launcher = $null
 $script:backup = $null
+$script:originalFiles = @{}
 $script:changed = $false
 $script:hadServer = $false
 $script:oldVersion = $null
@@ -19,6 +20,8 @@ $reason = 'PRECHECK'
 $healthStatus = 'NOT_TESTED'
 $storageStatus = 'NOT_TESTED'
 $assetsStatus = 'NOT_TESTED'
+$pdfModuleStatus = 'NOT_TESTED'
+$pdfModuleAction = 'NOT_TESTED'
 $reportStatus = 'NOT_WRITTEN'
 
 $new = @{
@@ -26,6 +29,7 @@ $new = @{
  'madar_launcher.py'='__HASH_LAUNCHER__'
  'vault_server.py'='__HASH_VAULT__'
  'madar_ai_server.py'='__HASH_SERVER__'
+ 'local_pdf.py'='__HASH_LOCAL_PDF__'
 }
 $oldByVersion = @{
  'v4.49'=@{
@@ -53,6 +57,11 @@ $oldByVersion = @{
   'madar_ai_server.py'='cc2ad43fa436b59927c5bfd9f6ea8652ddbcf9157169a1a0d66d9f76bf6a1ad5'
  }
 
+}
+
+$legacyPdfHashes = @{
+ 'v4.51'='4938d67ab359a3e587e0db7dda0e03afd7a045bf90ffbadfa0d914b05236b7f0'
+ 'v4.52'='4938d67ab359a3e587e0db7dda0e03afd7a045bf90ffbadfa0d914b05236b7f0'
 }
 
 function Get-RootFromLauncher([string]$path) {
@@ -130,6 +139,39 @@ function Resolve-MadarInstall {
 
 function Hash-File([string]$path) {
  return (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+}
+function Test-LegacyPdfModule {
+ $path = Join-Path $script:app 'local_pdf.py'
+ if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
+  if ($script:oldVersion -in @('v4.49','v4.50')) { return 'CREATE' }
+  throw "The known $($script:oldVersion) baseline is missing App/local_pdf.py."
+ }
+ Assert-NotReparse $path
+ $digest = Hash-File $path
+ if ($digest -eq $new['local_pdf.py']) { return 'ALREADY_TARGET' }
+ if ($legacyPdfHashes.ContainsKey($script:oldVersion)) {
+  if ($digest -ne $legacyPdfHashes[$script:oldVersion]) {
+   throw "The installed local_pdf.py differs from the known $($script:oldVersion) baseline. No replacement was made."
+  }
+  return 'REPLACE'
+ }
+ $source = Get-Content -LiteralPath $path -Raw -Encoding UTF8
+ $required = @(
+  '(?m)^\s*def\s+_root\s*\(',
+  '(?m)^\s*def\s+valid_name\s*\(',
+  '(?m)^\s*def\s+list_books\s*\(',
+  '(?m)^\s*def\s+read_book\s*\(',
+  '(?m)^\s*def\s+import_book\s*\('
+ )
+ foreach ($pattern in $required) {
+  if ($source -notmatch $pattern) {
+   throw "The $($script:oldVersion) PDF module is not a recognized baseline; no replacement was made."
+  }
+ }
+ if ($source -match '(?m)^\s*def\s+delete_book\s*\(') {
+  throw 'The existing PDF module contains an unrecognized delete_book implementation; no replacement was made.'
+ }
+ return 'REPLACE'
 }
 function Current-Health {
  try { return Invoke-RestMethod -Uri $healthURL -TimeoutSec 2 } catch { return $null }
@@ -241,6 +283,13 @@ try {
    }
   }
  }
+ $reason = 'PDF_MODULE_PREFLIGHT'
+ if ($script:oldVersion -eq $targetVersion) {
+  $pdfModuleAction = 'ALREADY_TARGET'
+ } else {
+  $pdfModuleAction = Test-LegacyPdfModule
+ }
+ $pdfModuleStatus = 'PASS'
  $reason = 'STORAGE_PREFLIGHT'
  foreach ($folder in @('Data','Books','Backups','Reports','Logs')) {
   $path = Join-Path $script:base $folder
@@ -294,7 +343,11 @@ try {
   $script:backup = Join-Path (Join-Path $script:base 'Backups') ('Madar454-Before-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
   New-Item -ItemType Directory -Path $script:backup -Force | Out-Null
   foreach ($name in @($new.Keys)) {
-   Copy-Item -LiteralPath (Join-Path $script:app $name) -Destination (Join-Path $script:backup $name) -ErrorAction Stop
+   $target = Join-Path $script:app $name
+   $script:originalFiles[$name] = Test-Path -LiteralPath $target -PathType Leaf
+   if ($script:originalFiles[$name]) {
+    Copy-Item -LiteralPath $target -Destination (Join-Path $script:backup $name) -ErrorAction Stop
+   }
   }
   $reason = 'SERVICE_STOP'
   if ($script:hadServer) {
@@ -332,7 +385,12 @@ try {
    foreach ($proc in @(Get-MadarProcesses)) { Stop-Process -Id $proc.ProcessId -ErrorAction SilentlyContinue }
    Start-Sleep -Milliseconds 350
    foreach ($name in @($new.Keys)) {
-    Copy-Item -LiteralPath (Join-Path $script:backup $name) -Destination (Join-Path $script:app $name) -Force -ErrorAction Stop
+    $target = Join-Path $script:app $name
+    if ($script:originalFiles.ContainsKey($name) -and $script:originalFiles[$name]) {
+     Copy-Item -LiteralPath (Join-Path $script:backup $name) -Destination $target -Force -ErrorAction Stop
+    } else {
+     Remove-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue
+    }
    }
    if ($script:hadServer) { Start-Madar }
    Write-Host 'The previous program files were restored from Backups.' -ForegroundColor Yellow
@@ -355,6 +413,9 @@ try {
     localHealth=$healthStatus
     storagePaths=$storageStatus
     staticAssets=$assetsStatus
+    pdfModule=$pdfModuleStatus
+    pdfModuleAction=$pdfModuleAction
+    programFiles=@($new.Keys | Sort-Object)
     programBackupCreated=[bool]$script:backup
     learnerDataModified=$false
     managedBooksModified=$false
