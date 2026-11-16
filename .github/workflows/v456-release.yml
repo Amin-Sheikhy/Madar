@@ -1,0 +1,58 @@
+name: Madar v4.56 SIWC reauthorization and build-label repair
+on:
+  push:
+    branches:
+      - codex/v4.56-siwc-reauth-buildlabel
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-and-build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Compile Python source
+        run: python -m compileall -q app tests repair454 repair455 repair456
+      - name: Run isolated unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          find app repair456/patch -type f -name '*.js' ! -path '*/vendor/*' -print0 | xargs -0 -r -n1 node --check
+      - name: Validate PowerShell syntax and baseline hash helper
+        shell: pwsh
+        run: |
+          $files = @("oneclick/bootstrap456.ps1","repair456/Install-Madar456-SIWC-Repair.ps1")
+          foreach ($file in $files) {
+            $tokens = $null; $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file),[ref]$tokens,[ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }
+          }
+          $installer = Get-Content -LiteralPath (Join-Path $PWD "repair456/Install-Madar456-SIWC-Repair.ps1") -Raw
+          $helper = [regex]::Match($installer, '(?ms)^function Git-BlobHash\(\[string\]\$path\) \{.*?^\}')
+          if (-not $helper.Success) { throw "Git-BlobHash helper could not be isolated for runtime test." }
+          . ([scriptblock]::Create($helper.Value))
+          $fixture = Join-Path $env:RUNNER_TEMP "madar-v455-build-hash.txt"
+          [IO.File]::WriteAllText($fixture,"v4.55 14050825 MO GPT-6 SIWC_REFRESH_WINDOW_DIAGNOSTICS`n",[Text.UTF8Encoding]::new($false))
+          try {
+            $actual = Git-BlobHash $fixture
+            if ($actual -ne "9da9234c1df9ba7fb1a4e295e98d4a1f3e6fff2a") { throw "v4.55 Git blob baseline hash failed: $actual" }
+          } finally { Remove-Item -LiteralPath $fixture -Force -ErrorAction SilentlyContinue }
+      - name: Install MinGW-w64 cross compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+      - name: Build v4.56 Windows x64 one-click updater
+        run: python oneclick/build_v456_oneclick.py
+      - name: Upload v4.56 one-click EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Madar456-OneClick-D
+          path: dist/Madar456-OneClick-D.exe
+          if-no-files-found: error
+          retention-days: 30
