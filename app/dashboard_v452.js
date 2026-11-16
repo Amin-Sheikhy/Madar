@@ -108,7 +108,14 @@
   fetch('/api/health',{cache:'no-store'}).then(async r=>{if(!r.ok)throw Error('health');return r.json()}).then(h=>{
    if(!active())return;
    if(h.applicationId!=='madar-local')throw Error('other service');
-   local.textContent='سرور پاسخ می‌دهد · نسخه '+String(h.version||'نامشخص');$('#m452-local-light')?.classList.add('is-on');
+   const version=String(h.version||'نامشخص');
+   const buildLabel=String(h.buildLabel||version).slice(0,200);
+   const buildNode=$('.build-inline');
+   if(buildNode){buildNode.title=buildLabel;buildNode.textContent=buildLabel}
+   document.title='مَدار '+buildLabel+' | داشبورد یادگیری و مطالعه';
+   const footer=$('.app-footer');
+   if(footer)footer.textContent=footer.textContent.replace(/^مَدار — .*? •/,'مَدار — '+buildLabel+' •');
+   local.textContent='سرور پاسخ می‌دهد · نسخه '+version;$('#m452-local-light')?.classList.add('is-on');
    const c=h.chatgptPlan||{};
    if(c.connected&&c.permission){ai.textContent='مجوز حساب گزارش‌شده · درخواست واقعی آزموده‌نشده';$('#m452-ai-light')?.classList.add('is-warm')}
    else if(c.connected){ai.textContent='ورود گزارش‌شده؛ مجوز استفاده تأیید نشده'}
@@ -145,7 +152,7 @@
   }
   // No module or data is removed; the technical navigation remains discoverable.
   const more=$('.madar-more>summary');if(more)more.innerHTML='⚙ نقشهٔ علمی، درس‌ها و تنظیمات <span class="madar-chevron">⌄</span>';
-  const version=$('.build-inline');if(version){version.title='v4.52 14050824 SU GPT-6 LEARNING_OVERVIEW_D';version.textContent='v4.52'}
+  // The full build identity is supplied by /api/health; never hardcode an old UI version.
  }
  simplifySidebar();
  const previous=render;
