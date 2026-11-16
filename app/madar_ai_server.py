@@ -23,6 +23,15 @@ HOST = '127.0.0.1'
 PORT = int(os.getenv('MADAR_PORT', '8765'))
 MODEL = os.getenv('MADAR_MODEL', '').strip()
 ROOT = Path(__file__).resolve().parent
+
+def build_info():
+    try:
+        label=(ROOT/'BUILD.txt').read_text(encoding='utf8').strip()
+    except (OSError,UnicodeError):
+        label='unknown'
+    version=label.split(maxsplit=1)[0] if label else 'unknown'
+    return version,label
+
 MAX_BODY = 30000
 # Lightweight request-volume brake to limit unplanned API spending. Not a billing cap.
 DAILY_API_REQUEST_LIMIT = min(100, max(1, int(os.getenv('MADAR_DAILY_REQUEST_LIMIT', '12'))))
@@ -738,7 +747,7 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == '/api/health':
             status=ai_connection.status()['providers']
             import local_pdf
-            return self._json(200,{'applicationId':'madar-local','version':'v4.55',
+            return self._json(200,{'applicationId':'madar-local','version':build_info()[0],'buildLabel':build_info()[1],
               'pdfReaderAssetsReady':all(n in self.ALLOWED_FILES and (ROOT/n).is_file() for n in ('pdf_simple.js','pdf_simple.css')),
               'bookDeletionReady':callable(getattr(local_pdf,'delete_book',None)),
               'learningDashboardAssetsReady':all(n in self.ALLOWED_FILES and (ROOT/n).is_file() for n in ('dashboard_v452.js','dashboard_v452.css')),
@@ -872,7 +881,7 @@ def serve():
     import ai_pdf_batch
     ai_pdf_batch.on_server_start()
     # Keep console output ASCII even if the process inherits Windows cp1252/cp437.
-    print('MADAR v4.55 | http://127.0.0.1:' + str(PORT), flush=True)
+    print('MADAR ' + build_info()[0] + ' | http://127.0.0.1:' + str(PORT), flush=True)
     print('Online AI:', 'configured' if os.getenv('OPENAI_API_KEY') else 'not configured', flush=True)
     print('API keys remain server-side; never put them in HTML or LocalStorage.', flush=True)
     ThreadingHTTPServer((HOST,PORT),Handler).serve_forever()
