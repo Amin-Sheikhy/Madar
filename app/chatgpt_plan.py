@@ -342,7 +342,7 @@ def _session():
             response=_request_json(TOKEN,method='POST',data=form,headers={'Content-Type':'application/x-www-form-urlencoded'})
         except RuntimeError as exc:
             message=str(exc)
-            if 'TOKEN_REFRESH: HTTP 400' in message and re.search(r'\\berror=invalid_grant\\b',message):
+            if 'TOKEN_REFRESH: HTTP 400' in message and re.search(r'\berror=invalid_grant\b',message):
                 # OpenAI classifies invalid_grant as an unusable refresh credential.
                 # Remove only the rejected token set; retain the issued client ID and
                 # account hints so the next browser sign-in reuses the same SIWC client.
