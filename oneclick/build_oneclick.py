@@ -136,7 +136,7 @@ def build() -> None:
     embedded = verify[-24-length:-24]
     assert hashlib.sha256(embedded).hexdigest() == digest
     with zipfile.ZipFile(io.BytesIO(embedded)) as z:
-        assert z.testzip() is None and len(z.namelist()) == 5
+        assert z.testzip() is None and len(z.namelist()) == 6
     print("PASS Windows PE32+ x86-64 GUI, KERNEL32-only imports, embedded ZIP hash")
     print("Installer bytes:", len(verify))
     print("Installer SHA256:", hashlib.sha256(verify).hexdigest())
