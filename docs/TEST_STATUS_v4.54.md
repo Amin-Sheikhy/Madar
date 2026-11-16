@@ -8,9 +8,9 @@ The original v4.54 candidate is on `codex/v4.54-storage-root`. The PDF-module up
 |---|---|---|
 | Build identity and server health version agree | PASS | `BUILD.txt`, `/api/health`, and server startup banner report v4.54. |
 | Overlay files match the application source byte-for-byte | PASS | Builder compares all five embedded files, including `local_pdf.py`, byte-for-byte with `app/`. |
-| Exact baseline manifest for v4.49–v4.52 | PASS | Four core files retain exact SHA-256 checks; `local_pdf.py` adds known hashes for v4.51/v4.52 and a guarded structural preflight for v4.49/v4.50. |
+| Exact baseline manifest for v4.49–v4.52 | PASS | Four core files retain exact SHA-256 checks; `local_pdf.py` accepts the original known hash for v4.51/v4.52 plus the exact additional v4.52 hash observed on the user's installation (`cd4c310e…680596`), and uses a guarded structural preflight for v4.49/v4.50. |
 | v4.54 storage-path unit tests | PASS | Installed layout, source-checkout fallback, and explicit data-folder override. |
-| PDF module migration preflight | PASS (static) | The guarded source checks known v4.51/v4.52 hashes; v4.49/v4.50 require expected PDF helper functions or an absent module, and unknown `delete_book` implementations are rejected. |
+| PDF module migration preflight | PASS (static) | The guarded source checks the known v4.51/v4.52 hashes, including the exact observed v4.52 variant `cd4c310e…680596`; v4.49/v4.50 require expected PDF helper functions or an absent module, and unknown `delete_book` implementations are rejected. |
 | Payload integrity unit tests | PASS | Version label, five overlay files, managed-book deletion safety, and absence of a maintainer-specific path in app code. |
 | Python compilation | PASS | `app`, `tests`, `repair453`, and `repair454`, including the added PDF payload. |
 | JavaScript syntax | PASS | Node.js 22 syntax validation completed. |
