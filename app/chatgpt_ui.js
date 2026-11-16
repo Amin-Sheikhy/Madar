@@ -61,7 +61,7 @@ async function refresh(quiet=false){
    }
   }
  }catch(err){if(!quiet)throw err;account={connected:false,permission:false,error:err.message};models=[]}
- refreshPanel();return account;
+ refreshPanel();window.dispatchEvent(new CustomEvent('madar:chatgpt-status',{detail:account}));return account;
 }
 function toast(s){if(typeof showToast==='function')showToast(s);else alert(s)}
 async function perform(action){
