@@ -1,0 +1,47 @@
+name: Madar v4.55 SIWC repair
+on:
+  push:
+    branches:
+      - codex/v4.55-siwc-refresh-diagnostics
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-and-build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Compile Python source
+        run: python -m compileall -q app tests repair454 repair455
+      - name: Run isolated unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Validate PowerShell installer syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PWD "repair455/Install-Madar455-SIWC-Refresh.ps1"),
+            [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+      - name: Install MinGW-w64 cross compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+      - name: Build v4.55 Windows x64 one-click updater
+        run: python oneclick/build_v455_oneclick.py
+      - name: Upload one-click EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Madar455-OneClick-D
+          path: dist/Madar455-OneClick-D.exe
+          if-no-files-found: error
+          retention-days: 30

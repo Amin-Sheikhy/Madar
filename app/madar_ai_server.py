@@ -738,7 +738,7 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path == '/api/health':
             status=ai_connection.status()['providers']
             import local_pdf
-            return self._json(200,{'applicationId':'madar-local','version':'v4.54',
+            return self._json(200,{'applicationId':'madar-local','version':'v4.55',
               'pdfReaderAssetsReady':all(n in self.ALLOWED_FILES and (ROOT/n).is_file() for n in ('pdf_simple.js','pdf_simple.css')),
               'bookDeletionReady':callable(getattr(local_pdf,'delete_book',None)),
               'learningDashboardAssetsReady':all(n in self.ALLOWED_FILES and (ROOT/n).is_file() for n in ('dashboard_v452.js','dashboard_v452.css')),
@@ -872,7 +872,7 @@ def serve():
     import ai_pdf_batch
     ai_pdf_batch.on_server_start()
     # Keep console output ASCII even if the process inherits Windows cp1252/cp437.
-    print('MADAR v4.54 | http://127.0.0.1:' + str(PORT), flush=True)
+    print('MADAR v4.55 | http://127.0.0.1:' + str(PORT), flush=True)
     print('Online AI:', 'configured' if os.getenv('OPENAI_API_KEY') else 'not configured', flush=True)
     print('API keys remain server-side; never put them in HTML or LocalStorage.', flush=True)
     ThreadingHTTPServer((HOST,PORT),Handler).serve_forever()
